@@ -9,7 +9,8 @@
 
 //global variables
 char* fs_name;
-int fs_fd;
+int fs_fd, directory_fd;
+static int BLOCK_COUNT = 12;
 
 void print_error_message(int errnum, int exit_code) {
     fprintf(stderr, "%s\n", strerror(errno));
@@ -22,7 +23,16 @@ void analyzeSuper(){
 }
 
 void analyzeDirectory() {
-    
+    directory_fd = creat("directory.csv", S_IRWXU);
+    int i, j;
+    int curr_entry;
+    //TODO: get directory_count
+    for (i = 0; i < directory_count; i++) {
+        curr_entry = 0;
+        for (j = 0; j < BLOCK_COUNT; j++) {
+            
+        }
+    }
 }
 
 void print_usage(){
