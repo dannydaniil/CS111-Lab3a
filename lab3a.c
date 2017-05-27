@@ -8,7 +8,7 @@ char* fs_name;
 int fs_fd;
 
 void analyzeSuper(){
-    
+    //use pread to read in superblock struct
 
 }
 
