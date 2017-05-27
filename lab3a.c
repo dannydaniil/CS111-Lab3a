@@ -30,9 +30,15 @@ void analyzeDirectory() {
     for (i = 0; i < directory_count; i++) {
         curr_entry = 0;
         for (j = 0; j < BLOCK_COUNT; j++) {
-            
+            uint32_t offset;
+            //TODO" need code
+            if (pread(fs_fd, offset, 4, 
         }
     }
+}
+
+void analyzeIndirect() {
+
 }
 
 void print_usage(){
@@ -63,6 +69,6 @@ int main(int argc, char* argv[]){
 
 analyzeSuper();
 analyzeDirectory();
-
+analyzeIndirect();
 //end of main
 }
