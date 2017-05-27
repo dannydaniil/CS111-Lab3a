@@ -1,4 +1,8 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -8,7 +12,7 @@ char* fs_name;
 int fs_fd;
 
 void print_error_message(int errnum, int exit_code) {
-    fprintf(stderr, "%s\n", strerror(errno);
+    fprintf(stderr, "%s\n", strerror(errno));
     exit(exit_code);
 }
 
