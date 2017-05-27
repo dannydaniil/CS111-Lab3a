@@ -7,9 +7,18 @@
 char* fs_name;
 int fs_fd;
 
+void print_error_message(int errnum, int exit_code) {
+    fprintf(stderr, "%s\n", strerror(errno);
+    exit(exit_code);
+}
+
 void analyzeSuper(){
     
 
+}
+
+void analyzeDirectory() {
+    
 }
 
 void print_usage(){
@@ -25,15 +34,13 @@ int main(int argc, char* argv[]){
     } else{
         fs_name = malloc(sizeof(char) * strlen(argv[1]+1));
         if(fs_name == NULL){
-            fprintf(stderr, "Error allocating memory: %s\n",strerror(errno));
-            exit(2);
+            print_error_message(errno, 2);
         }
     }
 
     fs_fd = open(fs_name, O_RDONLY);
     if( fs_fd == -1 ){
-        fprintf(stderr, "Error while opening file%s\n",strerror(errno));
-        exit(2);
+            print_error_message(errno, 2);
     }
 
 
@@ -41,7 +48,7 @@ int main(int argc, char* argv[]){
 
 
 analyzeSuper();
-
+analyzeDirectory();
 
 //end of main
 }
