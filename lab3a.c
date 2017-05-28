@@ -28,8 +28,12 @@ void analyzeSuper(){
 
 }
 
+void generateDirectoryMessage(int curr_entry) {
+    //TODO: replace with body of analyzeDirectory();
+}
+
 void analyzeDirectory() {
-    directory_fd = creat("directory.csv", S_IRWXU);
+    directory_fd = open("directory.csv", OWRONLY | O_CREAT | O_TRUNC, S_IRWXU);
     int i, j, k;
     int curr_entry;
     //TODO: get directory_count
@@ -55,7 +59,17 @@ void analyzeDirectory() {
                     curr_offset += entry_length;
                     curr_entry++;
                 } else {
-                    //TODO: print to csv
+                    //TODO:replace inode_parent with whatever daniel uses 
+                    char name_char;
+                    dprintf(directory_fd, "%d,%d,%d,%d,%d,\"", inode_parent, curr_entry, entry_length, name_length, inode);
+                    curr_entry++;
+                    int l;
+                    for (l = 0; l < name_length; l++) {
+                        if (pread(fs_fd, &name_char, 1, curr_offset + 8 + l) == -1) { print_error_message(errno, 2); }
+                        dprintf(directory_fd, "%c", name_char);
+                    }
+                    dprintf(directory_fd, "\"\n");
+                    curr_offset += entry_length;
                 }
             }
         }
