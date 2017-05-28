@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
 
 //global variables
 char* fs_name;
@@ -9,6 +10,8 @@ int fs_fd;
 
 void analyzeSuper(){
     //use pread to read in superblock struct
+
+
 
 }
 
@@ -35,8 +38,6 @@ int main(int argc, char* argv[]){
         fprintf(stderr, "Error while opening file%s\n",strerror(errno));
         exit(2);
     }
-
-
 
 
 
