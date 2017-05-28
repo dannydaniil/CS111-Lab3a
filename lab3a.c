@@ -28,8 +28,31 @@ void analyzeSuper(){
 
 }
 
-void generateDirectoryMessage(int curr_entry) {
+void generateDirectoryMessage(int curr_offset, int curr_entry) {
     //TODO: replace with body of analyzeDirectory();
+    uint8_t name_length;
+    uint16_t entry_length;
+    uint32_t inode;
+    if (pread(fs_fd, &name_length, 1, curr_offset + 6) == -1) { print_error_message(errno, 2); }
+    if (pread(fs_fd, &entry_length, 2, curr_offset + 4) == -1) { print_error_message(errno, 2); }
+    if (pread(fs_fd, &inode, 4, curr_offset) == -1) { print_error_message(errno, 2); }
+
+    if (inode == 0) {
+        curr_offset += entry _length;
+        curr_entry;
+    } else {
+//TODO:replace inode_parent with whatever daniel uses 
+        char name_char;
+        dprintf(directory_fd, "%d,%d,%d,%d,%d,\"", inode_parent, curr_entry, entry_length, name_length, inode);
+        curr_entry++;
+        int l;
+        for (l = 0; l < name_length; l++) {
+            if (pread(fs_fd, &name_char, 1, curr_offset + 8 + l) == -1) { print_error_message(errno, 2); }
+            dprintf(directory_fd, "%c", name_char);
+        }
+        dprintf(directory_fd, "\"\n");
+        curr_offset += entry_length;
+    }
 }
 
 void analyzeDirectory() {
@@ -46,31 +69,7 @@ void analyzeDirectory() {
             if (offset == 0) { continue; }
             int curr_offset = super->blockSize * offset;
             for (k = 0; k < super->blockSize; i++) {
-                uint8_t name_length;
-                if (pread(fs_fd, &name_length, 1, curr_offset + 6) == -1) { print_error_message(errno, 2); }
-
-                uint16_t entry_length;
-                if (pread(fs_fd, &entry_length, 2, curr_offset + 4) == -1) { print_error_message(errno, 2); }
-
-                uint32_t inode;
-                if (pread(fs_fd, &inode, 4, curr_offset) == -1) { print_error_message(errno, 2); }
-
-                if (inode == 0) {
-                    curr_offset += entry_length;
-                    curr_entry++;
-                } else {
-                    //TODO:replace inode_parent with whatever daniel uses 
-                    char name_char;
-                    dprintf(directory_fd, "%d,%d,%d,%d,%d,\"", inode_parent, curr_entry, entry_length, name_length, inode);
-                    curr_entry++;
-                    int l;
-                    for (l = 0; l < name_length; l++) {
-                        if (pread(fs_fd, &name_char, 1, curr_offset + 8 + l) == -1) { print_error_message(errno, 2); }
-                        dprintf(directory_fd, "%c", name_char);
-                    }
-                    dprintf(directory_fd, "\"\n");
-                    curr_offset += entry_length;
-                }
+                generateDirectoryMessage(curr_offset, curr_entry); 
             }
         }
     }
