@@ -14,7 +14,8 @@
 char* fs_name;
 int fs_fd;
 FILE* report_fd;
-struct ext2_super_block my_super_block;
+struct ext2_super_block super;
+struct ext2_group_desc group;
 
 #define SUPERBLOCK_OFFSET       1024
 
@@ -28,17 +29,25 @@ void print_error_message(int err_num, int exit_code) {
 void analyzeSuper(){
     //pread(fd, buff, count , offset);
     int status;
-
-    status = pread(fs_fd,&my_super_block, sizeof(struct ext2_super_block), SUPERBLOCK_OFFSET);
+    status = pread(fs_fd,&super, sizeof(struct ext2_super_block), SUPERBLOCK_OFFSET);
     if( status  ==  -1 ){
          print_error_message(errno,2);
      }
 
     fprintf(report_fd, "SUPERBLOCK, %d, %d, %d, %d, %d, %d, %d ",
-        my_super_block.s_blocks_count,my_super_block.s_inodes_count, 1024 << my_super_block.s_log_block_size,
-        my_super_block.s_inode_size, my_super_block.s_blocks_per_group, my_super_block.s_inodes_per_group,
-        my_super_block.s_first_ino
+        super.s_blocks_count,super.s_inodes_count, 1024 << super.s_log_block_size,
+        super.s_inode_size, super.s_blocks_per_group, super.s_inodes_per_group,
+        super.s_first_ino
         );
+}
+
+void analyzeGroup(){
+    int status;
+    status = pread(fs_fd,&my_group_desc, sizeof(struct ext2_group_desc), SUPERBLOCK_OFFSET);
+    if( status  ==  -1 ){
+         print_error_message(errno,2);
+     }
+
 
 }
 
@@ -70,7 +79,7 @@ int main(int argc, char* argv[]){
 report_fd = fopen("report.csv","a");
 
 analyzeSuper();
-
+analyzeGroup();
 
 //end of main
 }
