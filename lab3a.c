@@ -12,6 +12,11 @@
 //global variables
 char* fs_name;
 int fs_fd, directory_fd, indirect_fd;
+struct super_t * super;
+
+uint8_t buffer_8;
+uint16_t buffer_16;
+uint32_t buffer_32;
 
 void print_error_message(int err_num, int exit_code) {
     fprintf(stderr, "%s\n", strerror(err_num));
@@ -25,15 +30,34 @@ void analyzeSuper(){
 
 void analyzeDirectory() {
     directory_fd = creat("directory.csv", S_IRWXU);
-    int i, j;
+    int i, j, k;
     int curr_entry;
     //TODO: get directory_count
     for (i = 0; i < directory_count; i++) {
         curr_entry = 0;
         for (j = 0; j < BLOCK_COUNT; j++) {
             uint32_t offset;
-            //TODO" need code
-            if (pread(fs_fd, offset, 4, 
+            //TODO" need node
+            if (pread(fs_fd, offset, 4,... ) == -1) { print_error_message(errno, 2); }
+            if (offset == 0) { continue; }
+            int curr_offset = super->blockSize * offset;
+            for (k = 0; k < super->blockSize; i++) {
+                uint8_t name_length;
+                if (pread(fs_fd, &name_length, 1, curr_offset + 6) == -1) { print_error_message(errno, 2); }
+
+                uint16_t entry_length;
+                if (pread(fs_fd, &entry_length, 2, curr_offset + 4) == -1) { print_error_message(errno, 2); }
+
+                uint32_t inode;
+                if (pread(fs_fd, &inode, 4, curr_offset) == -1) { print_error_message(errno, 2); }
+
+                if (inode == 0) {
+                    curr_offset += entry_length;
+                    curr_entry++;
+                } else {
+                    //TODO: print to csv
+                }
+            }
         }
     }
 }
