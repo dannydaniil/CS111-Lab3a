@@ -23,11 +23,11 @@ void print_error_message(int err_num, int exit_code) {
 void analyzeSuper(){
     //pread(fd, buff, count , offset);
 
-    uint32_t block_num;
-    pread(fs_fd,&block_num, sizeof(uint32_t) ,1024 + sizeof(uint32_t));
+    __u32 block_num;
+    pread(fs_fd,&block_num, sizeof(__u32) ,1024 + sizeof(__u32));
     print_error_message(errno,2);
 
-    
+
 
 
 
