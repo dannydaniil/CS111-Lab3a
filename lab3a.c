@@ -181,11 +181,14 @@ void generateDirectoryMessage(int parent_num, int end_limit) {
         if (pread(fs_fd, &dir.rec_len, 2, curr_offset + 4) == -1) { print_error_message(errno, 2); }
         if (pread(fs_fd, &dir.name_len, 1, curr_offset + 6) == -1) { print_error_message(errno, 2); }
         if (pread(fs_fd, &dir.name, dir.name_len, curr_offset + 8) == -1) { print_error_message(errno, 2); }
-        dir.name[dir.name_len] = '\0';
+        if (dir.name_len < EXT2_NAME_LEN) {
+            dir.name[dir.name_len] = '\0';
+        } else {
+            dir.name[EXT2_NAME_LEN - 1] = '\0';
+        }
         if (dir.inode == 0) {
             curr_offset += dir.rec_len;
         } else {
-    //TODO:replace inode_parent with whatever daniel uses
             const char * dirent = "DIRENT";
             fprintf(report_fd, "%s,%d,%d,%d,%d,%d,\'%s\'\n", dirent, dir_inodes[parent_num], curr_offset - base_offset,
                     dir.inode, dir.rec_len, dir.name_len, dir.name);
@@ -197,12 +200,10 @@ void generateDirectoryMessage(int parent_num, int end_limit) {
 void analyzeDirectory() {
     uint32_t super_bsize = EXT2_MIN_BLOCK_SIZE << super.s_log_block_size;
     int i, j, k;
-    //TODO: get directory_count
     for (i = 0; i < num_directories; i++) {
         //direct blocks
         uint32_t offset;
         for (j = 0; j < EXT2_NDIR_BLOCKS; j++) {
-            //TODO: check if offset is correct
             if (pread(fs_fd, &offset, 4, (directories[i] + 40 + (j * 4))) == -1) { print_error_message(errno, 2); }
             if (offset == 0) { continue; }
             curr_offset = super_bsize * offset;
@@ -211,7 +212,6 @@ void analyzeDirectory() {
         }
 
         //indirect blocks
-        //TODO: get pread arg
         if (pread(fs_fd, &offset, 4, (directories[i] + 40 + (EXT2_IND_BLOCK * 4))) == -1) { print_error_message(errno, 2); }
         if (offset == 0) { continue; }
         for (j = 0; j < super_bsize / 4; j++) {
@@ -226,7 +226,6 @@ void analyzeDirectory() {
             }
         }
         //double indirect blocks
-        //TODO: find where the double indirect blocks are
         if (pread(fs_fd, &offset, 4, directories[i] + 40 + (EXT2_DIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
         if (offset == 0) { continue; }
         for (j = 0; j < super_bsize / 4; j ++) {
@@ -247,7 +246,6 @@ void analyzeDirectory() {
         }
 
         //triple indirect blocks
-        //TODO: find where triple indirect blocks are
         if (pread(fs_fd, &offset, 4, directories[i] + 40 + (EXT2_TIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
         if (offset == 0) { continue; }
         for (j = 0; j < super_bsize / 4; j++) {
