@@ -371,6 +371,11 @@ analyzeInodes();
 analyzeDirectories();
 analyzeIndirect();
 
+free(directories);
+free(dir_inodes);
+free(inodes);
+free(inodes_offset);
+
 close(fs_fd);
 fclose(report_fd);
 //end of main
