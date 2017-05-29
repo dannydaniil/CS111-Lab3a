@@ -73,7 +73,7 @@ void analyzeDirectory() {
             if (pread(fs_fd, &offset, 4, (directories[i] + 40 + (j * 4))) == -1) { print_error_message(errno, 2); }
             if (offset == 0) { continue; }
             curr_offset = super_bsize * offset;
-            generateDirectoryMessage(i, super_bsize * offset + super_bsize); 
+            generateDirectoryMessage(i, curr_offset + super_bsize); 
         }
         
         //indirect blocks
@@ -87,7 +87,7 @@ void analyzeDirectory() {
             if (pread(fs_fd, &block, 4, curr_offset) == -1) { print_error_message(errno, 2); }
             if (block != 0) {
                 curr_offset = block * super_bsize;
-                generateDirectoryMessage(i, block * super_bsize + super_bsize);
+                generateDirectoryMessage(i, curr_offset + super_bsize);
             }
         }
 
@@ -107,7 +107,7 @@ void analyzeDirectory() {
                 if (pread(fs_fd, &block2, 4, block * super_bsize + (k * 4)) == -1) { print_error_message(errno, 2); }
                 if (block2 == 0) { continue; }
                 curr_offset = block2 * super_bsize;
-                generateDirectoryMessage(i, block2 * super_bsize + super_bsize);
+                generateDirectoryMessage(i, curr_offset + super_bsize);
             }
         }
 
@@ -130,7 +130,7 @@ void analyzeDirectory() {
                     if (pread(fs_fd, &block3, 4, block2 * super_bsize + (l * 4)) == -1) { print_error_message(errno, 2); }
                     if (block3 == 0) { continue; }
                     curr_offset = block3 * super_bsize;
-                    generateDirectoryMessage(i, block3 * super_bsize + super_bsize);
+                    generateDirectoryMessage(i, curr_offset + super_bsize);
                 }
             }
         }
