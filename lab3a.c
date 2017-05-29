@@ -17,6 +17,8 @@ int curr_offset;
 int * directories, * dir_inodes;
 int num_directories = 0;
 
+int num_inodes = 0;
+
 struct ext2_super_block super;
 struct ext2_dir_entry dir;
 
@@ -137,17 +139,53 @@ void analyzeDirectory() {
     }
 }
 
-void generateIndirectMessage() {
+void generateIndirectMessage(int inode_num, int indirection_level, int offset, int indirect_block, int block) {
     const char* indirect = "INDIRECT";
-
+    fprintf(stdout, "%s,%d,%d,%d,%d,%d\n" indirect, inodes[inode_num], indirection_level,
+            offset, indirect_block, block);
 
 }
 
 void analyzeIndirect() {
-    int i, j;
+    __u32 super_bsize = EXT2_MIN_BLOCK_SIZE << super.s_log_block_size;
+    int i, j, k;
     //TODO: get inode_count
-    for (i = 0; i < inode_count; i++) {
-        __u32 curr_block;
+    for (i = 0; i < num_inodes; i++) {
+        __u32 block;
+
+        //single indirect
+        //TODO: populate inodes_offset array
+        if (pread(fs_fd, &block, inodes_offset[i] + 40 + (EXT2_IND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
+        int offset = block * super_bsize;
+        for (j = 0; j < super_bsize; j++) {
+            __u32 block2;
+            if (pread(fs_fd, &block2, 4, offset) == -1) { print_error_message(errno, 2); }
+            if (block2 == 0) { continue; }
+            generateIndirectMessage(i, 1, offset, block, block2);
+            offset += 4;
+        }
+
+        //double indirect
+        if (pread(fs_fd, &block, inodes_offset[i] + 40 + (EXT_DIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
+        offset = block * super_bsize;
+        for (j = 0; j < super_bsize / 4; j++) {
+            __u32 block2;
+            if (pread(fs_fd, &block2, 4, offset) == -1) { print_error_message(errno, 2); }
+            if (block2 == 0) { continue; }
+            generateIndirectMessage(i, 2, offset, block, block2);
+            offset += 4;
+            offset2 = block2 * super_bsize;
+            for (k = 0; k < super_bsize / 4; k++) {
+                __u32 block3;
+                if (pread(fs_fd, &block3, 4, offset2) == -1) { print_error_message(errno, 2); }
+                if (block3 == 0) { continue; }
+                generateIndirectMessage(i, 2, offset2, block2, block3);
+                offset2 += 4;
+            }
+        }
+
+        //
+
     }
 }
 
