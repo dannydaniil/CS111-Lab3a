@@ -16,6 +16,8 @@ int fs_fd;
 FILE* report_fd;
 struct ext2_super_block super;
 struct ext2_group_desc group;
+struct ext2_dir_entry dir;
+int curr_offset, base_offset;
 uint32_t block_size;
 
 int num_directories = 0;
@@ -179,13 +181,14 @@ void generateDirectoryMessage(int parent_num, int end_limit) {
         if (pread(fs_fd, &dir.rec_len, 2, curr_offset + 4) == -1) { print_error_message(errno, 2); }
         if (pread(fs_fd, &dir.name_len, 1, curr_offset + 6) == -1) { print_error_message(errno, 2); }
         if (pread(fs_fd, &dir.name, dir.name_len, curr_offset + 8) == -1) { print_error_message(errno, 2); }
-
+        dir.name[dir.name_len] = '\0';
         if (dir.inode == 0) {
             curr_offset += dir.rec_len;
         } else {
     //TODO:replace inode_parent with whatever daniel uses 
             const char * dirent = "DIRENT";
-            fprintf(stdout, "%s,%d,%d,%d,%d,%d,\'%s\'\n", dirent, dir_inode[parent_num], curr_offset, dir.inode, dir.rec_len, dir.name_len, dir.name);
+            fprintf(report_fd, "%s,%d,%d,%d,%d,%d,\'%s\'\n", dirent, dir_inodes[parent_num], curr_offset - base_offset,
+                    dir.inode, dir.rec_len, dir.name_len, dir.name);
             curr_offset += dir.rec_len;
         }
     }
@@ -203,6 +206,7 @@ void analyzeDirectory() {
             if (pread(fs_fd, &offset, 4, (directories[i] + 40 + (j * 4))) == -1) { print_error_message(errno, 2); }
             if (offset == 0) { continue; }
             curr_offset = super_bsize * offset;
+            base_offset = curr_offset;
             generateDirectoryMessage(i, curr_offset + super_bsize); 
         }
         
@@ -217,6 +221,7 @@ void analyzeDirectory() {
             if (pread(fs_fd, &block, 4, curr_offset) == -1) { print_error_message(errno, 2); }
             if (block != 0) {
                 curr_offset = block * super_bsize;
+                base_offset = curr_offset;
                 generateDirectoryMessage(i, curr_offset + super_bsize);
             }
         }
@@ -237,6 +242,7 @@ void analyzeDirectory() {
                 if (pread(fs_fd, &block2, 4, block * super_bsize + (k * 4)) == -1) { print_error_message(errno, 2); }
                 if (block2 == 0) { continue; }
                 curr_offset = block2 * super_bsize;
+                base_offset = curr_offset;
                 generateDirectoryMessage(i, curr_offset + super_bsize);
             }
         }
@@ -260,6 +266,7 @@ void analyzeDirectory() {
                     if (pread(fs_fd, &block3, 4, block2 * super_bsize + (l * 4)) == -1) { print_error_message(errno, 2); }
                     if (block3 == 0) { continue; }
                     curr_offset = block3 * super_bsize;
+                    base_offset = curr_offset;
                     generateDirectoryMessage(i, curr_offset + super_bsize);
                 }
             }
@@ -270,7 +277,7 @@ void analyzeDirectory() {
 
 void generateIndirectMessage(int inode_num, int indirection_level, int offset, int indirect_block, int block) {
     const char* indirect = "INDIRECT";
-    fprintf(stdout, "%s,%d,%d,%d,%d,%d\n", indirect, inodes[inode_num], indirection_level,
+    fprintf(report_fd, "%s,%d,%d,%d,%d,%d\n", indirect, inodes[inode_num], indirection_level,
             offset, indirect_block, block);
 
 }
@@ -308,6 +315,7 @@ void analyzeIndirect() {
                 __u32 block3;
                 if (pread(fs_fd, &block3, 4, offset2) == -1) { print_error_message(errno, 2); }
                 if (block3 == 0) { continue; }
+                base_offset = offset2;
                 generateIndirectMessage(i, 2, offset2, block2, block3);
                 offset2 += 4;
             }
@@ -368,7 +376,7 @@ analyzeSuper();
 analyzeGroup();
 analyzeBitmap();
 analyzeInodes();
-analyzeDirectories();
+analyzeDirectory();
 analyzeIndirect();
 
 free(directories);
