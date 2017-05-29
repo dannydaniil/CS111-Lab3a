@@ -47,7 +47,7 @@ void analyzeSuper(){
 
      block_size = (EXT2_MIN_BLOCK_SIZE << super.s_log_block_size);
 
-    fprintf(report_fd, "SUPERBLOCK, %d, %d, %d, %d, %d, %d, %d\n",
+    fprintf(report_fd, "SUPERBLOCK,%d,%d,%d,%d,%d,%d,%d\n",
         super.s_blocks_count,super.s_inodes_count, block_size,
         super.s_inode_size, super.s_blocks_per_group, super.s_inodes_per_group,
         super.s_first_ino
@@ -62,7 +62,7 @@ void analyzeGroup(){
      }
 
      //always 1 group
-     fprintf(report_fd, "GROUP, 0, %d, %d, %d, %d, %d, %d, %d\n",
+     fprintf(report_fd, "GROUP,0,%d,%d,%d,%d,%d,%d,%d\n",
         super.s_blocks_count,super.s_inodes_per_group,
         group.bg_free_blocks_count, group.bg_free_inodes_count,
         group.bg_block_bitmap, group.bg_inode_bitmap, group.bg_inode_table
@@ -86,7 +86,7 @@ void analyzeBitmap(){
          for(j = 0; j < 8 ; j++){
 
              if ( (entry & mask ) == 0 ){
-                 fprintf(report_fd, "BFREE %d\n", (8 * i) + j + 1 );
+                 fprintf(report_fd, "BFREE,%d\n", (8 * i) + j + 1 );
              }
              mask = mask << 1;
          }
@@ -106,7 +106,7 @@ void analyzeBitmap(){
          unsigned char mask = 0x1;
          for(j = 0; j < 8 ; j++){
              if ( (entry & mask ) == 0 ){
-                 fprintf(report_fd, "IFREE %d\n", (8 * i) + j + 1 );
+                 fprintf(report_fd, "IFREE,%d\n", (8 * i) + j + 1 );
                  inode_map[(8 * i) + j + 1] = 0;
              } else {
                  inode_map[(8 * i) + j + 1] = 1;
@@ -157,14 +157,14 @@ void analyzeInodes(){
                     strcpy(file_type,"?");
                 }
 
-                fprintf(report_fd,"INODE, %d, %s , %d, %d, %d, %d, %d, %d, %d, %d, %d \n",
+                fprintf(report_fd,"INODE,%d,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
                 i +1, file_type, inode.i_mode, inode.i_uid, inode.i_gid, inode.i_links_count,
                 inode.i_ctime, inode.i_mtime, inode.i_mtime, inode.i_size,
                 inode.i_blocks
              );
 
                 for(j = 0; j < EXT2_N_BLOCKS ; j++){
-                    fprintf(report_fd, ", %d",inode.i_block[j]);
+                    fprintf(report_fd, ",%d",inode.i_block[j]);
                 }
                 fprintf(report_fd, "\n");
 
@@ -277,8 +277,20 @@ void analyzeDirectory() {
 void generateIndirectMessage(int inode_num, int indirection_level, int offset, int base_offset,
         int indirect_block, int block) {
     const char* indirect = "INDIRECT";
+    int indirection_offset;
+    switch (indirection_level) {
+        case 1:
+            indirection_offset = EXT2_IND_BLOCK;
+            break;
+        case 2:
+            indirection_offset = EXT2_DIND_BLOCK;
+            break;
+        case 3:
+            indirection_offset = EXT2_TIND_BLOCK;
+            break;
+    }
     fprintf(report_fd, "%s,%d,%d,%d,%d,%d\n", indirect, inodes[inode_num], indirection_level,
-            12 + (offset - base_offset) / 4, indirect_block, block);
+            indirection_offset + (offset - base_offset) / 4, indirect_block, block);
 
 }
 
