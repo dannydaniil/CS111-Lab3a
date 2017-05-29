@@ -120,7 +120,6 @@ void analyzeDirectory() {
             __u32 block;
             if (pread(fs_fd, &block, 4, curr_offset == -1)) { print_error_message(errno, 2); }
             if (block == 0) { continue; }
-            int k;
             for (k = 0; k < super_bsize / 4; k++) {
                 __u32 block2;
                 if (pread(fs_fd, &block2, 4, block * super_bsize + (k * 4)) == -1) { print_error_message(errno, 2); }
@@ -141,21 +140,21 @@ void analyzeDirectory() {
 
 void generateIndirectMessage(int inode_num, int indirection_level, int offset, int indirect_block, int block) {
     const char* indirect = "INDIRECT";
-    fprintf(stdout, "%s,%d,%d,%d,%d,%d\n" indirect, inodes[inode_num], indirection_level,
+    fprintf(stdout, "%s,%d,%d,%d,%d,%d\n", indirect, inodes[inode_num], indirection_level,
             offset, indirect_block, block);
 
 }
 
 void analyzeIndirect() {
     __u32 super_bsize = EXT2_MIN_BLOCK_SIZE << super.s_log_block_size;
-    int i, j, k;
+    int i, j, k, l;
     //TODO: get inode_count
     for (i = 0; i < num_inodes; i++) {
         __u32 block;
 
         //single indirect
         //TODO: populate inodes_offset array
-        if (pread(fs_fd, &block, inodes_offset[i] + 40 + (EXT2_IND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
+        if (pread(fs_fd, &block, 4, inodes_offset[i] + 40 + (EXT2_IND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
         int offset = block * super_bsize;
         for (j = 0; j < super_bsize; j++) {
             __u32 block2;
@@ -166,7 +165,7 @@ void analyzeIndirect() {
         }
 
         //double indirect
-        if (pread(fs_fd, &block, inodes_offset[i] + 40 + (EXT_DIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
+        if (pread(fs_fd, &block, 4, inodes_offset[i] + 40 + (EXT2_DIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
         offset = block * super_bsize;
         for (j = 0; j < super_bsize / 4; j++) {
             __u32 block2;
@@ -174,7 +173,7 @@ void analyzeIndirect() {
             if (block2 == 0) { continue; }
             generateIndirectMessage(i, 2, offset, block, block2);
             offset += 4;
-            offset2 = block2 * super_bsize;
+            int offset2 = block2 * super_bsize;
             for (k = 0; k < super_bsize / 4; k++) {
                 __u32 block3;
                 if (pread(fs_fd, &block3, 4, offset2) == -1) { print_error_message(errno, 2); }
@@ -184,8 +183,32 @@ void analyzeIndirect() {
             }
         }
 
-        //
-
+        //triple indirect
+        if (pread(fs_fd, &block, 4, inodes_offset[i] + 40 + (EXT2_TIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
+        offset = block * super_bsize;
+        for (j = 0; j < super_bsize; j++) {
+            __u32 block2;
+            if (pread(fs_fd, &block2, 4, offset) == -1) { print_error_message(errno, 2); }
+            if (block2 == 0) { continue; }
+            generateIndirectMessage(i, 3, offset, block, block2);
+            offset += 4;
+            int offset2 = block2 * super_bsize;
+            for (k = 0; k < super_bsize / 4; k++) {
+                __u32 block3;
+                if (pread(fs_fd, &block3, 4, offset2) == -1) { print_error_message(errno, 2); }
+                if (block3 == 0) { continue; }
+                generateIndirectMessage(i, 3, offset2, block2, block3);
+                offset2 += 4;
+                int offset3 = block3 * super_bsize;
+                for (l = 0; l < super_bsize / 4; l++) {
+                    __u32 block4;
+                    if (pread(fs_fd, &block4, 4, offset3) == -1) { print_error_message(errno, 2); }
+                    if (block4 == 0) { continue; }
+                    generateIndirectMessage(i, 3, offset3, block3, block4);
+                    offset += 4;
+                }
+            }
+        }
     }
 }
 
