@@ -274,10 +274,11 @@ void analyzeDirectory() {
     }
 }
 
-void generateIndirectMessage(int inode_num, int indirection_level, int offset, int indirect_block, int block) {
+void generateIndirectMessage(int inode_num, int indirection_level, int offset, int base_offset,
+        int indirect_block, int block) {
     const char* indirect = "INDIRECT";
     fprintf(report_fd, "%s,%d,%d,%d,%d,%d\n", indirect, inodes[inode_num], indirection_level,
-            offset, indirect_block, block);
+            12 + (offset - base_offset) / 4, indirect_block, block);
 
 }
 
@@ -292,30 +293,33 @@ void analyzeIndirect() {
         //TODO: populate inodes_offset array
         if (pread(fs_fd, &block, 4, inodes_offset[i] + 40 + (EXT2_IND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
         int offset = block * super_bsize;
+        int base_offset = offset;
         for (j = 0; j < super_bsize; j++) {
             uint32_t block2;
             if (pread(fs_fd, &block2, 4, offset) == -1) { print_error_message(errno, 2); }
             if (block2 == 0) { continue; }
-            generateIndirectMessage(i, 1, offset, block, block2);
+            generateIndirectMessage(i, 1, offset, base_offset, block, block2);
             offset += 4;
         }
 
         //double indirect
         if (pread(fs_fd, &block, 4, inodes_offset[i] + 40 + (EXT2_DIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
         offset = block * super_bsize;
+        base_offset = offset;
         for (j = 0; j < super_bsize / 4; j++) {
             uint32_t block2;
             if (pread(fs_fd, &block2, 4, offset) == -1) { print_error_message(errno, 2); }
             if (block2 == 0) { continue; }
-            generateIndirectMessage(i, 2, offset, block, block2);
+            generateIndirectMessage(i, 2, offset, base_offset, block, block2);
             offset += 4;
             int offset2 = block2 * super_bsize;
+            int base_offset2 = offset2;
             for (k = 0; k < super_bsize / 4; k++) {
                 uint32_t block3;
                 if (pread(fs_fd, &block3, 4, offset2) == -1) { print_error_message(errno, 2); }
                 if (block3 == 0) { continue; }
                 base_offset = offset2;
-                generateIndirectMessage(i, 2, offset2, block2, block3);
+                generateIndirectMessage(i, 2, offset2, base_offset2, block2, block3);
                 offset2 += 4;
             }
         }
@@ -323,25 +327,28 @@ void analyzeIndirect() {
         //triple indirect
         if (pread(fs_fd, &block, 4, inodes_offset[i] + 40 + (EXT2_TIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
         offset = block * super_bsize;
+        base_offset = offset;
         for (j = 0; j < super_bsize; j++) {
             uint32_t block2;
             if (pread(fs_fd, &block2, 4, offset) == -1) { print_error_message(errno, 2); }
             if (block2 == 0) { continue; }
-            generateIndirectMessage(i, 3, offset, block, block2);
+            generateIndirectMessage(i, 3, offset, base_offset, block, block2);
             offset += 4;
             int offset2 = block2 * super_bsize;
+            int base_offset2 = offset2;
             for (k = 0; k < super_bsize / 4; k++) {
                 uint32_t block3;
                 if (pread(fs_fd, &block3, 4, offset2) == -1) { print_error_message(errno, 2); }
                 if (block3 == 0) { continue; }
-                generateIndirectMessage(i, 3, offset2, block2, block3);
+                generateIndirectMessage(i, 3, offset2, base_offset2, block2, block3);
                 offset2 += 4;
                 int offset3 = block3 * super_bsize;
+                int base_offset3 = offset3;
                 for (l = 0; l < super_bsize / 4; l++) {
                     uint32_t block4;
                     if (pread(fs_fd, &block4, 4, offset3) == -1) { print_error_message(errno, 2); }
                     if (block4 == 0) { continue; }
-                    generateIndirectMessage(i, 3, offset3, block3, block4);
+                    generateIndirectMessage(i, 3, offset3, base_offset3, block3, block4);
                     offset += 4;
                 }
             }
