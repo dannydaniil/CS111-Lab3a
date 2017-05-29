@@ -13,7 +13,14 @@ char* fs_name;
 int fs_fd;
 struct ext2_super_block * super;
 
-int curr_entry, curr_offset;
+int curr_offset;
+
+int * directories, * dir_inodes;
+int num_directories = 0;
+
+struct ext2_super_block super;
+struct ext2_dir_entry dir;
+
 
 void print_error_message(int err_num, int exit_code) {
     fprintf(stderr, "%s\n", strerror(err_num));
@@ -25,40 +32,43 @@ void analyzeSuper(){
 
 }
 
+void analyzeInode() {
+    directories = (int*)malloc(super.s_inodes_count * sizeof(int));
+    dir_inodes = (int*)malloc(super.s_inodes_count * sizeof(int));
+    __u32 super_bsize = EXT2_MIN_BLOCK_SIZE << super->s_log_block_size;
+    int i;
+    for (i = 0; i < super_bsize; i++) {
+        
+    }
+}
+
 void generateDirectoryMessage(int end_limit) {
-    struct ext2_dir_entry dir;
     while (curr_offset < end_limit) {
-        if (pread(fs_fd, &dir.name_len, 1, curr_offset + 6) == -1) { print_error_message(errno, 2); }
-        if (pread(fs_fd, &dir.rec_len, 2, curr_offset + 4) == -1) { print_error_message(errno, 2); }
         if (pread(fs_fd, &dir.inode, 4, curr_offset) == -1) { print_error_message(errno, 2); }
+        if (pread(fs_fd, &dir.rec_len, 2, curr_offset + 4) == -1) { print_error_message(errno, 2); }
+        if (pread(fs_fd, &dir.name_len, 1, curr_offset + 6) == -1) { print_error_message(errno, 2); }
+        if (pread(fs_fd, &dir.name, dir.name_len, curr_offset + 8) == -1) { print_error_message(errno, 2); }
 
         if (dir.inode == 0) {
             curr_offset += dir.rec_len;
-            curr_entry++;
         } else {
     //TODO:replace inode_parent with whatever daniel uses 
             const char * dirent = "DIRENT";
             char name_char;
-            fprintf(stdout, "%s,%d,%d,%d,%d,%d,\"", dirent, inode_parent, curr_offset, dir.inode, dir.rec_len, dir.name_len);
-            curr_entry++;
-            int i;
-            for (i = 0; i < dir.name_len; i++) {
-                if (pread(fs_fd, &name_char, 1, curr_offset + 8 + i) == -1) { print_error_message(errno, 2); }
-                fprintf(stdout, "%c", name_char);
-            }
-            fprintf(stdout, "\"\n");
+            fprintf(stdout, "%s,%d,%d,%d,%d,%d,\'%s\'\n", dirent, inode_parent, curr_offset, dir.inode, dir.rec_len, dir.name_len, dir.name);
             curr_offset += dir.rec_len;
         }
     }
 }
 
 void analyzeDirectory() {
+    findDirectories();
+
     __u32 super_bsize = EXT2_MIN_BLOCK_SIZE << super->s_log_block_size;
     int i, j, k;
     //TODO: get directory_count
     for (i = 0; i < directory_count; i++) {
         //direct blocks
-        curr_entry = 0;
         __u32 offset;
         for (j = 0; j < EXT2_NDIR_BLOCKS; j++) {
             //TODO" need node
@@ -124,12 +134,16 @@ void analyzeDirectory() {
     }
 }
 
+void generateIndirectMessage() {
+    const char* indirect = "INDIRECT";
+
+
+}
+
 void analyzeIndirect() {
     int i, j;
-    int curr_entry;
     //TODO: get inode_count
     for (i = 0; i < inode_count; i++) {
-        curr_entry = 0;
         __u32 curr_block;
     }
 }
