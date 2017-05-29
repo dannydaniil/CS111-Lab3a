@@ -26,30 +26,28 @@ void analyzeSuper(){
 }
 
 void generateDirectoryMessage(int end_limit) {
-    //TODO: replace with body of analyzeDirectory();
-    __u8 name_length;
-    __u16 entry_length;
-    __u32 inode;
+    struct ext2_dir_entry dir;
     while (curr_offset < end_limit) {
-        if (pread(fs_fd, &name_length, 1, curr_offset + 6) == -1) { print_error_message(errno, 2); }
-        if (pread(fs_fd, &entry_length, 2, curr_offset + 4) == -1) { print_error_message(errno, 2); }
-        if (pread(fs_fd, &inode, 4, curr_offset) == -1) { print_error_message(errno, 2); }
+        if (pread(fs_fd, &dir.name_len, 1, curr_offset + 6) == -1) { print_error_message(errno, 2); }
+        if (pread(fs_fd, &dir.rec_len, 2, curr_offset + 4) == -1) { print_error_message(errno, 2); }
+        if (pread(fs_fd, &dir.inode, 4, curr_offset) == -1) { print_error_message(errno, 2); }
 
-        if (inode == 0) {
-            curr_offset += entry_length;
-            curr_entry;
+        if (dir.inode == 0) {
+            curr_offset += dir.rec_len;
+            curr_entry++;
         } else {
     //TODO:replace inode_parent with whatever daniel uses 
+            const char * dirent = "DIRENT";
             char name_char;
-            dprintf(directory_fd, "%d,%d,%d,%d,%d,\"", inode_parent, curr_entry, entry_length, name_length, inode);
+            dprintf(directory_fd, "%s,%d,%d,%d,%d,%d,\"", dirent, inode_parent, curr_offset, dir.inode, dir.rec_len, dir.name_len);
             curr_entry++;
-            int l;
-            for (l = 0; l < name_length; l++) {
-                if (pread(fs_fd, &name_char, 1, curr_offset + 8 + l) == -1) { print_error_message(errno, 2); }
+            int i;
+            for (i = 0; i < dir.name_len; i++) {
+                if (pread(fs_fd, &name_char, 1, curr_offset + 8 + i) == -1) { print_error_message(errno, 2); }
                 dprintf(directory_fd, "%c", name_char);
             }
             dprintf(directory_fd, "\"\n");
-            curr_offset += entry_length;
+            curr_offset += dir.rec_len;
         }
     }
 }
@@ -98,10 +96,10 @@ void analyzeDirectory() {
             if (block == 0) { continue; }
             int k;
             for (k = 0; k < super_bsize / 4; k++) {
-                __u32 block2
+                __u32 block2;
                 if (pread(fs_fd, &block2, 4, block * super_bsize + (k * 4)) == -1) { print_error_message(errno, 2); }
-                if (block == 0) { continue; }
-                curr_ofset = block2 * super_bsize;
+                if (block2 == 0) { continue; }
+                curr_offset = block2 * super_bsize;
                 generateDirectoryMessage(block2 * super_bsize + super_bsize);
             }
         }
@@ -110,6 +108,19 @@ void analyzeDirectory() {
         //TODO: find where triple indirect blocks are
         if (pread(fs_fd, &offset, 4, ...) == -1) { print_error_message(errno, 2); }
         if (offset == 0) { continue; }
+        for (j = 0; j < super_bsize / 4; j++) {
+            curr_offset = super_bsize * offset + (j * 4);
+            __u32 block;
+            if (pread(fs_fd, &block, 4, curr_offset == -1)) { print_error_message(errno, 2); }
+            if (block == 0) { continue; }
+            int k;
+            for (k = 0; k < super_bsize / 4; k++) {
+                __u32 block2;
+                if (pread(fs_fd, &block2, 4, block * super_bsize (k * 4)) == -1) { print_error_message(errno, 2); }
+                if (block2 == 0) { continue; }
+
+            }
+        }
 
     }
 }
