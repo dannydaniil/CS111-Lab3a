@@ -42,7 +42,7 @@ void analyzeInode() {
     }
 }
 
-void generateDirectoryMessage(int end_limit) {
+void generateDirectoryMessage(int parent_num, int end_limit) {
     while (curr_offset < end_limit) {
         if (pread(fs_fd, &dir.inode, 4, curr_offset) == -1) { print_error_message(errno, 2); }
         if (pread(fs_fd, &dir.rec_len, 2, curr_offset + 4) == -1) { print_error_message(errno, 2); }
@@ -55,32 +55,30 @@ void generateDirectoryMessage(int end_limit) {
     //TODO:replace inode_parent with whatever daniel uses 
             const char * dirent = "DIRENT";
             char name_char;
-            fprintf(stdout, "%s,%d,%d,%d,%d,%d,\'%s\'\n", dirent, inode_parent, curr_offset, dir.inode, dir.rec_len, dir.name_len, dir.name);
+            fprintf(stdout, "%s,%d,%d,%d,%d,%d,\'%s\'\n", dirent, dir_inode[i], curr_offset, dir.inode, dir.rec_len, dir.name_len, dir.name);
             curr_offset += dir.rec_len;
         }
     }
 }
 
 void analyzeDirectory() {
-    findDirectories();
-
     __u32 super_bsize = EXT2_MIN_BLOCK_SIZE << super->s_log_block_size;
     int i, j, k;
     //TODO: get directory_count
-    for (i = 0; i < directory_count; i++) {
+    for (i = 0; i < num_directories; i++) {
         //direct blocks
         __u32 offset;
         for (j = 0; j < EXT2_NDIR_BLOCKS; j++) {
-            //TODO" need node
-            if (pread(fs_fd, &offset, 4,... ) == -1) { print_error_message(errno, 2); }
+            //TODO: check if offset is correct
+            if (pread(fs_fd, &offset, 4, (directories[i] + 40 + (j * 4))) == -1) { print_error_message(errno, 2); }
             if (offset == 0) { continue; }
             curr_offset = super_bsize * offset;
-            generateDirectoryMessage(super_bsize * offset + super_bsize); 
+            generateDirectoryMessage(i, super_bsize * offset + super_bsize); 
         }
         
         //indirect blocks
         //TODO: get pread arg
-        if (pread(fs_fd, &offset, 4, ..) == -1) { print_error_message(errno, 2); }
+        if (pread(fs_fd, &offset, 4, (directories[i] + 40 + (EXT2_IND_BLOCKS * 4))) == -1) { print_error_message(errno, 2); }
         if (offset == 0) { continue; }
         for (j = 0; j < super_bsize / 4; j++) {
             //depends on how inodes are organized
@@ -89,13 +87,13 @@ void analyzeDirectory() {
             if (pread(fs_fd, &block, 4, curr_offset) == -1) { print_error_message(errno, 2); }
             if (block != 0) {
                 curr_offset = block * super_bsize;
-                generateDirectoryMessage(block * super_bsize + super_bsize);
+                generateDirectoryMessage(i, block * super_bsize + super_bsize);
             }
         }
 
         //double indirect blocks
         //TODO: find where the double indirect blocks are
-        if (pread(fs_fd, &offset, 4, ...) == -1) { print_error_message(errno, 2); }
+        if (pread(fs_fd, &offset, 4, directories[i] + 40 + (EXT2_DIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
         if (offset == 0) { continue; }
         for (j = 0; j < super_bsize / 4; j ++) {
             //find how inodes are organized
@@ -109,13 +107,13 @@ void analyzeDirectory() {
                 if (pread(fs_fd, &block2, 4, block * super_bsize + (k * 4)) == -1) { print_error_message(errno, 2); }
                 if (block2 == 0) { continue; }
                 curr_offset = block2 * super_bsize;
-                generateDirectoryMessage(block2 * super_bsize + super_bsize);
+                generateDirectoryMessage(i, block2 * super_bsize + super_bsize);
             }
         }
 
         //triple indirect blocks
         //TODO: find where triple indirect blocks are
-        if (pread(fs_fd, &offset, 4, ...) == -1) { print_error_message(errno, 2); }
+        if (pread(fs_fd, &offset, 4, directories[i] + 40 + (EXT2_TIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
         if (offset == 0) { continue; }
         for (j = 0; j < super_bsize / 4; j++) {
             curr_offset = super_bsize * offset + (j * 4);
@@ -127,7 +125,14 @@ void analyzeDirectory() {
                 __u32 block2;
                 if (pread(fs_fd, &block2, 4, block * super_bsize + (k * 4)) == -1) { print_error_message(errno, 2); }
                 if (block2 == 0) { continue; }
-
+                int l;
+                for (l = 0; l < super_bsize / 4; l++) {
+                    __u32 block3;
+                    if (pread(fs_fd, &block3, 4, block2 * super_bsize + (l * 4)) == -1) { print_error_message(errno, 2); }
+                    if (block3 == 0) { continue; }
+                    curr_offset = block3 * super_bsize;
+                    generateDirectoryMessage(i, block3 * super_bsize + super_bsize);
+                }
             }
         }
 
