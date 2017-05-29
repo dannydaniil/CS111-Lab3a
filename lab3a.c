@@ -26,6 +26,7 @@ int* directories,* dir_inodes,* inodes,* inodes_offset;
 int* inode_map;
 
 #define SUPERBLOCK_OFFSET       1024
+#define OFFSET_ADDEND           40
 
 void print_usage(){
     printf("Usage: lab3a file_system_name\n");
@@ -204,7 +205,7 @@ void analyzeDirectory() {
         //direct blocks
         uint32_t offset;
         for (j = 0; j < EXT2_NDIR_BLOCKS; j++) {
-            if (pread(fs_fd, &offset, 4, (directories[i] + 40 + (j * 4))) == -1) { print_error_message(errno, 2); }
+            if (pread(fs_fd, &offset, 4, (directories[i] + OFFSET_ADDEND + (j * 4))) == -1) { print_error_message(errno, 2); }
             if (offset == 0) { continue; }
             curr_offset = super_bsize * offset;
             base_offset = curr_offset;
@@ -212,7 +213,7 @@ void analyzeDirectory() {
         }
 
         //indirect blocks
-        if (pread(fs_fd, &offset, 4, (directories[i] + 40 + (EXT2_IND_BLOCK * 4))) == -1) { print_error_message(errno, 2); }
+        if (pread(fs_fd, &offset, 4, (directories[i] + OFFSET_ADDEND + (EXT2_IND_BLOCK * 4))) == -1) { print_error_message(errno, 2); }
         if (offset == 0) { continue; }
         for (j = 0; j < super_bsize / 4; j++) {
             //depends on how inodes are organized
@@ -226,7 +227,7 @@ void analyzeDirectory() {
             }
         }
         //double indirect blocks
-        if (pread(fs_fd, &offset, 4, directories[i] + 40 + (EXT2_DIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
+        if (pread(fs_fd, &offset, 4, directories[i] + OFFSET_ADDEND + (EXT2_DIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
         if (offset == 0) { continue; }
         for (j = 0; j < super_bsize / 4; j ++) {
             //find how inodes are organized
@@ -246,7 +247,7 @@ void analyzeDirectory() {
         }
 
         //triple indirect blocks
-        if (pread(fs_fd, &offset, 4, directories[i] + 40 + (EXT2_TIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
+        if (pread(fs_fd, &offset, 4, directories[i] + OFFSET_ADDEND + (EXT2_TIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
         if (offset == 0) { continue; }
         for (j = 0; j < super_bsize / 4; j++) {
             curr_offset = super_bsize * offset + (j * 4);
@@ -301,7 +302,7 @@ void analyzeIndirect() {
 
         //single indirect
         //TODO: populate inodes_offset array
-        if (pread(fs_fd, &block, 4, inodes_offset[i] + 40 + (EXT2_IND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
+        if (pread(fs_fd, &block, 4, inodes_offset[i] + OFFSET_ADDEND + (EXT2_IND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
         int offset = block * super_bsize;
         int base_offset = offset;
         for (j = 0; j < super_bsize; j++) {
@@ -313,7 +314,7 @@ void analyzeIndirect() {
         }
 
         //double indirect
-        if (pread(fs_fd, &block, 4, inodes_offset[i] + 40 + (EXT2_DIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
+        if (pread(fs_fd, &block, 4, inodes_offset[i] + OFFSET_ADDEND + (EXT2_DIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
         offset = block * super_bsize;
         base_offset = offset;
         for (j = 0; j < super_bsize / 4; j++) {
@@ -335,7 +336,7 @@ void analyzeIndirect() {
         }
 
         //triple indirect
-        if (pread(fs_fd, &block, 4, inodes_offset[i] + 40 + (EXT2_TIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
+        if (pread(fs_fd, &block, 4, inodes_offset[i] + OFFSET_ADDEND + (EXT2_TIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
         offset = block * super_bsize;
         base_offset = offset;
         for (j = 0; j < super_bsize; j++) {
