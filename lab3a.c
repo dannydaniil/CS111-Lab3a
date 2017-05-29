@@ -11,7 +11,6 @@
 //global variables
 char* fs_name;
 int fs_fd;
-struct ext2_super_block * super;
 
 int curr_offset;
 
@@ -35,7 +34,7 @@ void analyzeSuper(){
 void analyzeInode() {
     directories = (int*)malloc(super.s_inodes_count * sizeof(int));
     dir_inodes = (int*)malloc(super.s_inodes_count * sizeof(int));
-    __u32 super_bsize = EXT2_MIN_BLOCK_SIZE << super->s_log_block_size;
+    __u32 super_bsize = EXT2_MIN_BLOCK_SIZE << super.s_log_block_size;
     int i;
     for (i = 0; i < super_bsize; i++) {
         
@@ -54,15 +53,14 @@ void generateDirectoryMessage(int parent_num, int end_limit) {
         } else {
     //TODO:replace inode_parent with whatever daniel uses 
             const char * dirent = "DIRENT";
-            char name_char;
-            fprintf(stdout, "%s,%d,%d,%d,%d,%d,\'%s\'\n", dirent, dir_inode[i], curr_offset, dir.inode, dir.rec_len, dir.name_len, dir.name);
+            fprintf(stdout, "%s,%d,%d,%d,%d,%d,\'%s\'\n", dirent, dir_inode[parent_num], curr_offset, dir.inode, dir.rec_len, dir.name_len, dir.name);
             curr_offset += dir.rec_len;
         }
     }
 }
 
 void analyzeDirectory() {
-    __u32 super_bsize = EXT2_MIN_BLOCK_SIZE << super->s_log_block_size;
+    __u32 super_bsize = EXT2_MIN_BLOCK_SIZE << super.s_log_block_size;
     int i, j, k;
     //TODO: get directory_count
     for (i = 0; i < num_directories; i++) {
@@ -78,7 +76,7 @@ void analyzeDirectory() {
         
         //indirect blocks
         //TODO: get pread arg
-        if (pread(fs_fd, &offset, 4, (directories[i] + 40 + (EXT2_IND_BLOCKS * 4))) == -1) { print_error_message(errno, 2); }
+        if (pread(fs_fd, &offset, 4, (directories[i] + 40 + (EXT2_IND_BLOCK * 4))) == -1) { print_error_message(errno, 2); }
         if (offset == 0) { continue; }
         for (j = 0; j < super_bsize / 4; j++) {
             //depends on how inodes are organized
