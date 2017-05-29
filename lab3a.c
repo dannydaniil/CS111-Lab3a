@@ -18,6 +18,10 @@ struct ext2_super_block super;
 struct ext2_group_desc group;
 uint32_t block_size;
 
+int num_directories = 0;
+int* directories,* dir_inodes,* inodes,* inodes_offset;
+int* inode_map;
+
 #define SUPERBLOCK_OFFSET       1024
 
 void print_usage(){
@@ -38,7 +42,7 @@ void analyzeSuper(){
          print_error_message(errno,2);
      }
 
-     block_size = (1024 << super.s_log_block_size);
+     block_size = (EXT2_MIN_BLOCK_SIZE << super.s_log_block_size);
 
     fprintf(report_fd, "SUPERBLOCK, %d, %d, %d, %d, %d, %d, %d\n",
         super.s_blocks_count,super.s_inodes_count, block_size,
@@ -64,12 +68,11 @@ void analyzeGroup(){
 
 void analyzeBitmap(){
 
-    unsigned char entry;
     int status;
+    unsigned char entry;
     uint32_t start = group.bg_block_bitmap * block_size;
 
-    int i;
-    int j;
+    int i, j;
     for(i = 0; i < block_size ; i++){
         status = pread(fs_fd, &entry, 1, start + i);
         if( status  ==  -1 ){
@@ -89,6 +92,8 @@ void analyzeBitmap(){
     //place start at inode bitmap
     start = group.bg_inode_bitmap * block_size;
 
+    inode_map = (int*) malloc(8 * block_size * sizeof(int));
+
     for(i = 0; i < block_size ; i++ ){
         status = pread(fs_fd, &entry, 1, start + i);
         if( status  ==  -1 ){
@@ -99,11 +104,58 @@ void analyzeBitmap(){
          for(j = 0; j < 8 ; j++){
              if ( (entry & mask ) == 0 ){
                  fprintf(report_fd, "IFREE %d\n", (8 * i) + j + 1 );
+                 inode_map[(8 * i) + j + 1] = 0;
+             } else {
+                 inode_map[(8 * i) + j + 1] = 1;
              }
              mask = mask << 1;
          }
     }
 //end of analyzeBitmap
+}
+
+void analyzeInodes(){
+
+    uint32_t start;
+    struct ext2_inode inode;
+    int status;
+    char file_type[2];
+
+    
+
+    start = group.bg_inode_table * block_size;
+    int i;
+    for( i = 0; i < super.s_inodes_per_group ; i++){
+
+        if(inode_map[i] == 1){
+
+            status = pread( fs_fd, &inode,sizeof(struct ext2_inode), start + (i * 128) );
+            if( status  ==  -1 ){
+                 print_error_message(errno,2);
+             }
+            if( (inode.i_links_count != 0) && (inode.i_mode != 0) ){
+
+                if(inode.i_mode & 0x8000){
+                    strcpy(file_type,"f");
+                }else if (inode.i_mode & 0x4000){
+
+                    strcpy(file_type,"d");
+                } else if (inode.i_mode & 0xA000){
+                    strcpy(file_type,"s");
+                } else{
+                    strcpy(file_type,"?");
+                }
+
+                fprintf(report_fd,"INODE, %d, %s , %d, %d, %d, %d, %d, %d, %d, %d, %d \n",
+                i +1, file_type, inode.i_mode, inode.i_uid, inode.i_gid, inode.i_links_count,
+                inode.i_ctime, inode.i_mtime, inode.i_mtime, inode.i_size,
+                inode.i_blocks
+             );
+            }
+
+        }
+    }
+//end of analyzeInodes
 }
 
 
