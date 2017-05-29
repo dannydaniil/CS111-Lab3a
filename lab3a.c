@@ -121,7 +121,7 @@ void analyzeInodes(){
     int status;
     char file_type[2];
 
-    
+
 
     start = group.bg_inode_table * block_size;
     int i;
