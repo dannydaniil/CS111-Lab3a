@@ -10,7 +10,7 @@
 
 //global variables
 char* fs_name;
-int fs_fd, directory_fd, indirect_fd;
+int fs_fd;
 struct ext2_super_block * super;
 
 int curr_entry, curr_offset;
@@ -39,14 +39,14 @@ void generateDirectoryMessage(int end_limit) {
     //TODO:replace inode_parent with whatever daniel uses 
             const char * dirent = "DIRENT";
             char name_char;
-            dprintf(directory_fd, "%s,%d,%d,%d,%d,%d,\"", dirent, inode_parent, curr_offset, dir.inode, dir.rec_len, dir.name_len);
+            fprintf(stdout, "%s,%d,%d,%d,%d,%d,\"", dirent, inode_parent, curr_offset, dir.inode, dir.rec_len, dir.name_len);
             curr_entry++;
             int i;
             for (i = 0; i < dir.name_len; i++) {
                 if (pread(fs_fd, &name_char, 1, curr_offset + 8 + i) == -1) { print_error_message(errno, 2); }
-                dprintf(directory_fd, "%c", name_char);
+                fprintf(stdout, "%c", name_char);
             }
-            dprintf(directory_fd, "\"\n");
+            fprintf(stdout, "\"\n");
             curr_offset += dir.rec_len;
         }
     }
@@ -54,7 +54,6 @@ void generateDirectoryMessage(int end_limit) {
 
 void analyzeDirectory() {
     __u32 super_bsize = EXT2_MIN_BLOCK_SIZE << super->s_log_block_size;
-    directory_fd = open("directory.csv", O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
     int i, j, k;
     //TODO: get directory_count
     for (i = 0; i < directory_count; i++) {
@@ -116,7 +115,7 @@ void analyzeDirectory() {
             int k;
             for (k = 0; k < super_bsize / 4; k++) {
                 __u32 block2;
-                if (pread(fs_fd, &block2, 4, block * super_bsize (k * 4)) == -1) { print_error_message(errno, 2); }
+                if (pread(fs_fd, &block2, 4, block * super_bsize + (k * 4)) == -1) { print_error_message(errno, 2); }
                 if (block2 == 0) { continue; }
 
             }
@@ -126,7 +125,6 @@ void analyzeDirectory() {
 }
 
 void analyzeIndirect() {
-    indirect_fd = creat("indirect.csv", S_IRWXU);
     int i, j;
     int curr_entry;
     //TODO: get inode_count
