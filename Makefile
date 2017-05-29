@@ -12,7 +12,7 @@ lab3a:
 	$(CC) $(DEBUG) $(FLAGS) lab3a.c -o lab3a
 
 clean:
-	rm -rf lab3a
+	rm -rf lab3a report.csv
 
 dist:
 	tar cfv $(TAR) $(FILES)

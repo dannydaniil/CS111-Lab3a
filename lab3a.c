@@ -34,21 +34,27 @@ void analyzeSuper(){
          print_error_message(errno,2);
      }
 
-    fprintf(report_fd, "SUPERBLOCK, %d, %d, %d, %d, %d, %d, %d ",
+    fprintf(report_fd, "SUPERBLOCK, %d, %d, %d, %d, %d, %d, %d\n",
         super.s_blocks_count,super.s_inodes_count, 1024 << super.s_log_block_size,
         super.s_inode_size, super.s_blocks_per_group, super.s_inodes_per_group,
         super.s_first_ino
-        );
+    );
 }
 
 void analyzeGroup(){
     int status;
-    status = pread(fs_fd,&my_group_desc, sizeof(struct ext2_group_desc), SUPERBLOCK_OFFSET);
+    status = pread(fs_fd,&group, sizeof(struct ext2_group_desc), SUPERBLOCK_OFFSET + sizeof(struct ext2_super_block));
     if( status  ==  -1 ){
          print_error_message(errno,2);
      }
 
+     //int num_groups = (super.s_blocks_count/super.s_blocks_per_group);
 
+     fprintf(report_fd, "GROUP, 0, %d, %d, %d, %d, %d, %d, %d\n",
+        super.s_blocks_count,super.s_inodes_per_group,
+        group.bg_free_blocks_count, group.bg_free_inodes_count,
+        group.bg_block_bitmap, group.bg_inode_bitmap, group.bg_inode_table
+    );
 }
 
 void print_usage(){
