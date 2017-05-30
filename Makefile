@@ -1,7 +1,7 @@
 .SILENT:
 
 TAR = lab3a-504636684.tar.gz
-FILES = Makefile README lab3a.c
+FILES = Makefile README lab3a.c ext2_fs.h
 DEBUG= -g
 FLAGS= -Wall
 CC = gcc
