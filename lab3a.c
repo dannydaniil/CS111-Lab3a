@@ -125,8 +125,7 @@ void analyzeBitmap(){
 
 void analyzeInodes(){
 
-    uint32_t start;
-    uint32_t end;
+    int start, end;
     struct ext2_inode inode;
     int status;
     char file_type[2];
@@ -136,10 +135,10 @@ void analyzeInodes(){
     int count = 0;
 
     //arrays to be used in analyzeDirectories
-    directories = (int*)malloc(super.s_inodes_count * sizeof(int));
-    dir_inodes = (int*)malloc(super.s_inodes_count * sizeof(int));
-    inodes = (int*)malloc(super.s_inodes_count * sizeof(int));
-    inodes_offset = (int*)malloc(super.s_inodes_count * sizeof(int));
+    // directories = (int*)malloc(super.s_inodes_count * sizeof(int));
+    // dir_inodes = (int*)malloc(super.s_inodes_count * sizeof(int));
+    // inodes = (int*)malloc(super.s_inodes_count * sizeof(int));
+    // inodes_offset = (int*)malloc(super.s_inodes_count * sizeof(int));
 
     start = group.bg_inode_table * block_size;
     end = start + (super.s_inodes_count * sizeof(struct ext2_inode));
