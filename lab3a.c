@@ -1,3 +1,8 @@
+/*
+TODO: change date format ==> use piazza post
+      test using debugfs
+      pass the sanity check
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,7 +18,6 @@
 //global variables
 char* fs_name;
 int fs_fd;
-FILE* report_fd;
 struct ext2_super_block super;
 struct ext2_group_desc group;
 struct ext2_dir_entry dir;
@@ -48,7 +52,7 @@ void analyzeSuper(){
 
      block_size = (EXT2_MIN_BLOCK_SIZE << super.s_log_block_size);
 
-    fprintf(report_fd, "SUPERBLOCK,%d,%d,%d,%d,%d,%d,%d\n",
+    printf("SUPERBLOCK,%d,%d,%d,%d,%d,%d,%d\n",
         super.s_blocks_count,super.s_inodes_count, block_size,
         super.s_inode_size, super.s_blocks_per_group, super.s_inodes_per_group,
         super.s_first_ino
@@ -63,7 +67,7 @@ void analyzeGroup(){
      }
 
      //always 1 group
-     fprintf(report_fd, "GROUP,0,%d,%d,%d,%d,%d,%d,%d\n",
+     printf("GROUP,0,%d,%d,%d,%d,%d,%d,%d\n",
         super.s_blocks_count,super.s_inodes_per_group,
         group.bg_free_blocks_count, group.bg_free_inodes_count,
         group.bg_block_bitmap, group.bg_inode_bitmap, group.bg_inode_table
@@ -87,7 +91,7 @@ void analyzeBitmap(){
          for(j = 0; j < 8 ; j++){
 
              if ( (entry & mask ) == 0 ){
-                 fprintf(report_fd, "BFREE,%d\n", (8 * i) + j + 1 );
+                 printf("BFREE,%d\n", (8 * i) + j + 1 );
              }
              mask = mask << 1;
          }
@@ -107,7 +111,7 @@ void analyzeBitmap(){
          unsigned char mask = 0x1;
          for(j = 0; j < 8 ; j++){
              if ( (entry & mask ) == 0 ){
-                 fprintf(report_fd, "IFREE,%d\n", (8 * i) + j + 1 );
+                 printf("IFREE,%d\n", (8 * i) + j + 1 );
                  inode_map[(8 * i) + j + 1] = 0;
              } else {
                  inode_map[(8 * i) + j + 1] = 1;
@@ -158,16 +162,19 @@ void analyzeInodes(){
                     strcpy(file_type,"?");
                 }
 
-                fprintf(report_fd,"INODE,%d,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+
+
+
+                printf("INODE,%d,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
                 i +1, file_type, inode.i_mode, inode.i_uid, inode.i_gid, inode.i_links_count,
                 inode.i_ctime, inode.i_mtime, inode.i_mtime, inode.i_size,
                 inode.i_blocks
              );
 
                 for(j = 0; j < EXT2_N_BLOCKS ; j++){
-                    fprintf(report_fd, ",%d",inode.i_block[j]);
+                    printf(",%d",inode.i_block[j]);
                 }
-                fprintf(report_fd, "\n");
+                printf("\n");
 
             }
 
@@ -191,7 +198,7 @@ void generateDirectoryMessage(int parent_num, int end_limit) {
             curr_offset += dir.rec_len;
         } else {
             const char * dirent = "DIRENT";
-            fprintf(report_fd, "%s,%d,%d,%d,%d,%d,\'%s\'\n", dirent, dir_inodes[parent_num], curr_offset - base_offset,
+            printf("%s,%d,%d,%d,%d,%d,\'%s\'\n", dirent, dir_inodes[parent_num], curr_offset - base_offset,
                     dir.inode, dir.rec_len, dir.name_len, dir.name);
             curr_offset += dir.rec_len;
         }
@@ -288,7 +295,7 @@ void generateIndirectMessage(int inode_num, int indirection_level, int offset, i
             indirection_offset = EXT2_TIND_BLOCK;
             break;
     }
-    fprintf(report_fd, "%s,%d,%d,%d,%d,%d\n", indirect, inodes[inode_num], indirection_level,
+    printf("%s,%d,%d,%d,%d,%d\n", indirect, inodes[inode_num], indirection_level,
             indirection_offset + (offset - base_offset) / 4, indirect_block, block);
 
 }
@@ -382,17 +389,17 @@ int main(int argc, char* argv[]){
         }
     }
 
-    fs_fd = open(fs_name, O_RDONLY);
-    if( fs_fd == -1 ){
-        print_error_message(errno,2);
-    }
 
-report_fd = fopen("report.csv","a");
 
 analyzeSuper();
+printf("after analyzeSuper\n");
 analyzeGroup();
+
+printf("after group\n");
 analyzeBitmap();
+printf("after bitmap\n");
 analyzeInodes();
+printf("after indodes\n");
 analyzeDirectory();
 analyzeIndirect();
 
@@ -402,6 +409,5 @@ free(inodes);
 free(inodes_offset);
 
 close(fs_fd);
-fclose(report_fd);
 //end of main
 }
