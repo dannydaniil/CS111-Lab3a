@@ -162,9 +162,6 @@ void analyzeInodes(){
                     strcpy(file_type,"?");
                 }
 
-
-
-
                 printf("INODE,%d,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
                 i +1, file_type, inode.i_mode, inode.i_uid, inode.i_gid, inode.i_links_count,
                 inode.i_ctime, inode.i_mtime, inode.i_mtime, inode.i_size,
