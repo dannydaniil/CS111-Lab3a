@@ -138,7 +138,7 @@ void analyzeInodes(){
     inodes_offset = (int*)malloc(super.s_inodes_count * sizeof(int));
 
     start = group.bg_inode_table * block_size;
-    end = start + (superBlock.s_inodes_count * sizeof(struct ext2_inode));
+    end = start + (super.s_inodes_count * sizeof(struct ext2_inode));
 
 
     int i, j;
