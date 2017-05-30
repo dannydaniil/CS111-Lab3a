@@ -391,7 +391,6 @@ int main(int argc, char* argv[]){
 analyzeSuper();
 printf("after analyzeSuper\n");
 analyzeGroup();
-
 printf("after group\n");
 analyzeBitmap();
 printf("after bitmap\n");
