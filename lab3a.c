@@ -140,7 +140,7 @@ void analyzeInodes(){
     int i, j;
     for( i = 0; i < super.s_inodes_per_group ; i++){
 
-        //if(inode_map[i] == 1){
+        if(inode_map[i] == 1){
 
             status = pread( fs_fd, &inode,sizeof(struct ext2_inode), start + (i * 128) );
             if( status  ==  -1 ){
@@ -186,13 +186,16 @@ void analyzeInodes(){
                 );
 
                 for(j = 0; j < EXT2_N_BLOCKS ; j++){
-                    printf(",%d",inode.i_block[j]);
+                    if(inode.i_block[j]){
+                        printf(",%d",inode.i_block[j]);
+                    }else{
+                        printf(",0");
+                    }
                 }
                 printf("\n");
 
             }
-
-        //}
+        }
     }
 //end of analyzeInodes
 }
