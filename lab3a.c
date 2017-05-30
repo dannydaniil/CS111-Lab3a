@@ -126,6 +126,7 @@ void analyzeBitmap(){
 void analyzeInodes(){
 
     uint32_t start;
+    uint32_t end;
     struct ext2_inode inode;
     int status;
     char file_type[2];
@@ -137,24 +138,27 @@ void analyzeInodes(){
     inodes_offset = (int*)malloc(super.s_inodes_count * sizeof(int));
 
     start = group.bg_inode_table * block_size;
+    end = start + (superBlock.s_inodes_count * sizeof(struct ext2_inode));
+
+
     int i, j;
-    for( i = 0; i < super.s_inodes_per_group ; i++){
+    for( i = start; i < end ; i += sizeof(struct ext2_inode)){
 
         if(inode_map[i] == 1){
 
-            status = pread( fs_fd, &inode,sizeof(struct ext2_inode), start + (i * 128) );
+            status = pread( fs_fd, &inode,sizeof(struct ext2_inode), i );
             if( status  ==  -1 ){
                  print_error_message(errno,2);
              }
             if( (inode.i_links_count != 0) && (inode.i_mode != 0) ){
 
-                inodes_offset[num_inodes] = start + (i * 128);
+                inodes_offset[num_inodes] = i;
                 inodes[num_inodes] = i + 1;
                 num_inodes++;
                 if(inode.i_mode & 0x8000){
                     strcpy(file_type,"f");
                 }else if (inode.i_mode & 0x4000){
-                    directories[num_directories] = start + (i * 128);
+                    directories[num_directories] = i;
                     dir_inodes[num_directories] = i + 1;
                     num_directories ++;
                     strcpy(file_type,"d");
