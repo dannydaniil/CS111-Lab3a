@@ -185,7 +185,7 @@ void analyzeInodes(){
                 strftime(mBuff,30,"%m/%d/%g %H:%M:%S",m_struct);
 
 
-                printf("INODE,%d,%s,%d,%d,%d,%d,%s,%s,%s,%d,%d",
+                printf("INODE,%d,%s,%o,%d,%d,%d,%s,%s,%s,%d,%d",
                     count, file_type, (int) (inode.i_mode & 511), (int) inode.i_uid, (int) inode.i_gid, (int) inode.i_links_count,
                     cBuff, mBuff, aBuff, (int) inode.i_size, (int) inode.i_blocks
                 );
