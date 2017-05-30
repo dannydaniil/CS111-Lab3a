@@ -135,10 +135,10 @@ void analyzeInodes(){
     int count = 0;
 
     //arrays to be used in analyzeDirectories
-    // directories = (int*)malloc(super.s_inodes_count * sizeof(int));
-    // dir_inodes = (int*)malloc(super.s_inodes_count * sizeof(int));
-    // inodes = (int*)malloc(super.s_inodes_count * sizeof(int));
-    // inodes_offset = (int*)malloc(super.s_inodes_count * sizeof(int));
+    directories = (int*)malloc(super.s_inodes_count * sizeof(int));
+    dir_inodes = (int*)malloc(super.s_inodes_count * sizeof(int));
+    inodes = (int*)malloc(super.s_inodes_count * sizeof(int));
+    inodes_offset = (int*)malloc(super.s_inodes_count * sizeof(int));
 
     start = group.bg_inode_table * block_size;
     end = start + (super.s_inodes_count * sizeof(struct ext2_inode));
@@ -156,15 +156,15 @@ void analyzeInodes(){
              count ++;
 
             if( (inode.i_links_count != 0) && (inode.i_mode != 0) ){
-                //inodes_offset[num_inodes] = count;
-                //inodes[num_inodes] = count + 1;
-                //num_inodes++;
+                inodes_offset[num_inodes] = i;
+                inodes[num_inodes] = count ;
+                num_inodes++;
                 if(inode.i_mode & 0x8000){
                     strcpy(file_type,"f");
                 }else if (inode.i_mode & 0x4000){
-                    //directories[num_directories] = count;
-                    //dir_inodes[num_directories] = count + 1;
-                    //num_directories ++;
+                    directories[num_directories] = i;
+                    dir_inodes[num_directories] = count;
+                    num_directories ++;
                     strcpy(file_type,"d");
                 } else if (inode.i_mode & 0xA000){
                     strcpy(file_type,"s");
