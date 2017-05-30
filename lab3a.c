@@ -180,12 +180,12 @@ void analyzeInodes(){
                 strftime(mBuff,30,"%m/%d/%g %H:%M:%S",M_time);
 
 
-                printf("INODE,%d,%s,%d,%d,%d,%d,%s,%s,%s,%d,%d\n",
+                printf("INODE,%d,%s,%d,%d,%d,%d,%s,%s,%s,%d,%d",
                 i +1, file_type, inode.i_mode, inode.i_uid, inode.i_gid, inode.i_links_count,
                 cBuff, mBuff, aBuff, inode.i_size,inode.i_blocks
                 );
 
-                for(j = 0; j < EXT2_N_BLOCKS ; j++){
+                for(j = 0; j < 15 ; j++){
                     if(inode.i_block[j]){
                         printf(",%d",inode.i_block[j]);
                     }else{
