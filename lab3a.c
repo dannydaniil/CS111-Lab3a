@@ -52,7 +52,7 @@ void analyzeSuper(){
          print_error_message(errno,2);
      }
 
-     block_size = (EXT2_MIN_BLOCK_SIZE << super.s_log_block_size);
+    block_size = (1024 << super.s_log_block_size);
     printf("SUPERBLOCK,%d,%d,%d,%d,%d,%d,%d\n",
         super.s_blocks_count,super.s_inodes_count, block_size,
         super.s_inode_size, super.s_blocks_per_group, super.s_inodes_per_group,
@@ -125,8 +125,7 @@ void analyzeBitmap(){
 
 void analyzeInodes(){
 
-    uint32_t start;
-    uint32_t end;
+    int start, end;
     struct ext2_inode inode;
     int status;
     char file_type[2];
@@ -136,10 +135,10 @@ void analyzeInodes(){
     int count = 0;
 
     //arrays to be used in analyzeDirectories
-    directories = (int*)malloc(super.s_inodes_count * sizeof(int));
-    dir_inodes = (int*)malloc(super.s_inodes_count * sizeof(int));
-    inodes = (int*)malloc(super.s_inodes_count * sizeof(int));
-    inodes_offset = (int*)malloc(super.s_inodes_count * sizeof(int));
+    // directories = (int*)malloc(super.s_inodes_count * sizeof(int));
+    // dir_inodes = (int*)malloc(super.s_inodes_count * sizeof(int));
+    // inodes = (int*)malloc(super.s_inodes_count * sizeof(int));
+    // inodes_offset = (int*)malloc(super.s_inodes_count * sizeof(int));
 
     start = group.bg_inode_table * block_size;
     end = start + (super.s_inodes_count * sizeof(struct ext2_inode));
@@ -157,15 +156,15 @@ void analyzeInodes(){
              count ++;
 
             if( (inode.i_links_count != 0) && (inode.i_mode != 0) ){
-                inodes_offset[num_inodes] = count;
-                inodes[num_inodes] = count + 1;
-                num_inodes++;
+                //inodes_offset[num_inodes] = count;
+                //inodes[num_inodes] = count + 1;
+                //num_inodes++;
                 if(inode.i_mode & 0x8000){
                     strcpy(file_type,"f");
                 }else if (inode.i_mode & 0x4000){
-                    directories[num_directories] = count;
-                    dir_inodes[num_directories] = count + 1;
-                    num_directories ++;
+                    //directories[num_directories] = count;
+                    //dir_inodes[num_directories] = count + 1;
+                    //num_directories ++;
                     strcpy(file_type,"d");
                 } else if (inode.i_mode & 0xA000){
                     strcpy(file_type,"s");
@@ -175,7 +174,7 @@ void analyzeInodes(){
 
                 time_t a_time = inode.i_atime;
                 struct tm* a_struct = localtime(&a_time);
-                strftime(aBuff,30,"%m/%d/%g %H:%M:%S",a_struct);
+                strftime(aBuff, 30,"%m/%d/%g %H:%M:%S", a_struct);
 
                 time_t c_time = inode.i_ctime;
                 struct tm* c_struct = localtime(&c_time);
@@ -186,9 +185,9 @@ void analyzeInodes(){
                 strftime(mBuff,30,"%m/%d/%g %H:%M:%S",m_struct);
 
 
-                printf("INODE,%d,%s,%d,%d,%d,%d,%s,%s,%s,%d,%d",
-                count, file_type, inode.i_mode, inode.i_uid, inode.i_gid, inode.i_links_count,
-                cBuff, mBuff, aBuff, inode.i_size,inode.i_blocks
+                printf("INODE,%d,%s,%o,%d,%d,%d,%s,%s,%s,%d,%d",
+                    count, file_type, (int) (inode.i_mode & 511), (int) inode.i_uid, (int) inode.i_gid, (int) inode.i_links_count,
+                    cBuff, mBuff, aBuff, (int) inode.i_size, (int) inode.i_blocks
                 );
 
                 for(j = 0; j < 15 ; j++){
