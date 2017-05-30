@@ -163,26 +163,27 @@ void analyzeInodes(){
                     strcpy(file_type,"?");
                 }
 
-                time_t stime;
-                struct tm mytime;
+                char aBuff[30];
+                char cBuff[30];
+                char mBuff[30];
 
-                printf("INODE,%d,%s,%d,%d,%d,%d,\n",
-                i +1, file_type, inode.i_mode, inode.i_uid, inode.i_gid, inode.i_links_count
+                time_t a_time = inode.i_atime;
+                time_t c_time = inode.i_ctime;
+                time_t m_time = inode.i_mtime;
+
+                struct tm* A_time = localtime(&a_time);
+                struct tm* C_time = localtime(&c_time);
+                struct tm* M_time = localtime(&m_time);
+
+                strftime(&aBuff,30,"%m/%d/%g %H:%M:%S",A_time);
+                strftime(&cBuff,30,"%m/%d/%g %H:%M:%S",C_time);
+                strftime(&mBuff,30,"%m/%d/%g %H:%M:%S",M_time);
+
+
+                printf("INODE,%d,%s,%d,%d,%d,%d,%s,%s,%s,%d,%d\n",
+                i +1, file_type, inode.i_mode, inode.i_uid, inode.i_gid, inode.i_links_count,
+                cBuff, mBuff, aBuff, inode.i_size,inode.i_blocks
                 );
-
-                stime = inode.i_ctime;
-                gmtime_r(&stime, &mytime);
-                printf("%d/%d/%d %d:%d:%d,",mytime.tm_mon,mytime.tm_mday,1900 + mytime.tm_year,mytime.tm_hour,mytime.tm_min,mytime.tm_sec );
-
-                stime = inode.i_mtime;
-                gmtime_r(&stime, &mytime);
-                printf("%d/%d/%d %d:%d:%d,",mytime.tm_mon,mytime.tm_mday,1900 + mytime.tm_year,mytime.tm_hour,mytime.tm_min,mytime.tm_sec );
-
-                stime = inode.i_atime;
-                gmtime_r(&stime, &mytime);
-                printf("%d/%d/%d %d:%d:%d,",mytime.tm_mon,mytime.tm_mday,1900 + mytime.tm_year,mytime.tm_hour,mytime.tm_min,mytime.tm_sec );
-
-                printf("%d,%d",inode.i_size,inode.i_blocks);
 
                 for(j = 0; j < EXT2_N_BLOCKS ; j++){
                     printf(",%d",inode.i_block[j]);
