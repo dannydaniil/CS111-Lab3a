@@ -52,7 +52,7 @@ void analyzeSuper(){
          print_error_message(errno,2);
      }
 
-     block_size = (EXT2_MIN_BLOCK_SIZE << super.s_log_block_size);
+    block_size = (1024 << super.s_log_block_size);
     printf("SUPERBLOCK,%d,%d,%d,%d,%d,%d,%d\n",
         super.s_blocks_count,super.s_inodes_count, block_size,
         super.s_inode_size, super.s_blocks_per_group, super.s_inodes_per_group,
