@@ -157,15 +157,15 @@ void analyzeInodes(){
              count ++;
 
             if( (inode.i_links_count != 0) && (inode.i_mode != 0) ){
-                inodes_offset[num_inodes] = count;
-                inodes[num_inodes] = count + 1;
-                num_inodes++;
+                //inodes_offset[num_inodes] = count;
+                //inodes[num_inodes] = count + 1;
+                //num_inodes++;
                 if(inode.i_mode & 0x8000){
                     strcpy(file_type,"f");
                 }else if (inode.i_mode & 0x4000){
-                    directories[num_directories] = count;
-                    dir_inodes[num_directories] = count + 1;
-                    num_directories ++;
+                    //directories[num_directories] = count;
+                    //dir_inodes[num_directories] = count + 1;
+                    //num_directories ++;
                     strcpy(file_type,"d");
                 } else if (inode.i_mode & 0xA000){
                     strcpy(file_type,"s");
@@ -187,7 +187,7 @@ void analyzeInodes(){
 
 
                 printf("INODE,%d,%s,%d,%d,%d,%d,%s,%s,%s,%d,%d",
-                    count, file_type, (int) inode.i_mode, (int) inode.i_uid, (int) inode.i_gid, (int) inode.i_links_count,
+                    count, file_type, (int) (inode.i_mode & 511), (int) inode.i_uid, (int) inode.i_gid, (int) inode.i_links_count,
                     cBuff, mBuff, aBuff, (int) inode.i_size, (int) inode.i_blocks
                 );
 
