@@ -147,6 +147,7 @@ void analyzeInodes(){
                  print_error_message(errno,2);
              }
             if( (inode.i_links_count != 0) && (inode.i_mode != 0) ){
+
                 inodes_offset[num_inodes] = start + (i * 128);
                 inodes[num_inodes] = i + 1;
                 num_inodes++;
@@ -171,13 +172,13 @@ void analyzeInodes(){
                 time_t c_time = inode.i_ctime;
                 time_t m_time = inode.i_mtime;
 
-                struct tm* A_time = localtime(&a_time);
-                struct tm* C_time = localtime(&c_time);
-                struct tm* M_time = localtime(&m_time);
+                struct tm* a_struct = localtime(&a_time);
+                struct tm* c_struct = localtime(&c_time);
+                struct tm* m_struct = localtime(&m_time);
 
-                strftime(aBuff,30,"%m/%d/%g %H:%M:%S",A_time);
-                strftime(cBuff,30,"%m/%d/%g %H:%M:%S",C_time);
-                strftime(mBuff,30,"%m/%d/%g %H:%M:%S",M_time);
+                strftime(aBuff,30,"%m/%d/%g %H:%M:%S",a_struct);
+                strftime(cBuff,30,"%m/%d/%g %H:%M:%S",c_struct);
+                strftime(mBuff,30,"%m/%d/%g %H:%M:%S",m_struct);
 
 
                 printf("INODE,%d,%s,%d,%d,%d,%d,%s,%s,%s,%d,%d",
