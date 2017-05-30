@@ -51,7 +51,6 @@ void analyzeSuper(){
      }
 
      block_size = (EXT2_MIN_BLOCK_SIZE << super.s_log_block_size);
-
     printf("SUPERBLOCK,%d,%d,%d,%d,%d,%d,%d\n",
         super.s_blocks_count,super.s_inodes_count, block_size,
         super.s_inode_size, super.s_blocks_per_group, super.s_inodes_per_group,
@@ -385,9 +384,12 @@ int main(int argc, char* argv[]){
             print_error_message(errno,2);
         }
     }
+fs_fd = open(fs_name, O_RDONLY);
+    if( fs_fd == -1 ){
+                print_error_message(errno,2);
+    }
 
-
-
+printf("first\n");
 analyzeSuper();
 printf("after analyzeSuper\n");
 analyzeGroup();
