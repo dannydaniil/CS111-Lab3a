@@ -2,15 +2,57 @@ NAME: DANIIL, DANIEL CHRIS; YU, RICHARD
 UID: 504636684; 304464688
 EMAIL: dannyd1997@g.ucla.edu; richardyu123@g.ucla.edu
 
+slip days used: 0
+
 lab3a.c:
 
 This c program takes in a file system image and prints out information
 about this file system in a csv format. This information includes:
-superblock summary:
-group summary:
-free block summary:
-free i-node summary:
-inode summary:
+
+superblock:
+
+This requirement is satisfied within the function analyzeSuper.
+The function simply issues a pread from offset 1024, which is
+where the superblock is stored and saves the read content into
+a struct of type ext2_superblock. Using that struct, we simply
+printf the required members of the struct.
+
+group:
+
+The requirement is satisfied within the function analyzeGroup.
+The function does exactly what analyzeSuper does,except that the
+struct in which the read content is saved is of type ext2_group_desc.
+The read starts exactly 2 blocks from the start of the fs.
+
+free block:
+
+The requirement is satisfied within analyzeBitmap.
+The read starts at group.bg_block_bitmap * block_size ,
+which is where the block bitmap is located. The bitmap is then
+scanned and using a mask, we are able to tell if the
+bit(therefore the block) is used or not.
+
+free i-node:
+
+The requirement is satisfied within analyzeBitmap.
+The read starts at group.bg_inode_bitmap * block_size; ,
+which is where the inode bitmap is located. The bitmap is then
+scanned and using a mask, we are able to tell if the
+bit(therefore the block) is used or not.
+
+
+inode:
+
+The requirement is satisfied within analyzeInode.
+The read starts at group.bg_inode_table * block_size ,
+which is where the inode table is. Using the the info
+we got from the inode bitmap, we examine the used inodes.
+For each inode, we perform a pread and save it in a struct of
+type ext2_inode. The contents are then printed as specfied
+by the spec. The tricky part was the outputting of the times.
+We used gmtime_r to convert from seconds till epoch to
+the specified format, as suggested by a post on piazza.
+
 
 directory entries:
 1. the string "DIRENT", 2. the inode number of the parent, 3. the byte offset
