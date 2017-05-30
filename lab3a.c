@@ -421,4 +421,5 @@ free(inodes_offset);
 
 close(fs_fd);
 //end of main
+exit (0);
 }
