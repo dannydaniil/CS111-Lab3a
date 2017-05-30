@@ -175,7 +175,7 @@ void analyzeInodes(){
 
                 time_t a_time = inode.i_atime;
                 struct tm* a_struct = localtime(&a_time);
-                strftime(aBuff,30,"%m/%d/%g %H:%M:%S",a_struct);
+                strftime(aBuff, 30,"%m/%d/%g %H:%M:%S", a_struct);
 
                 time_t c_time = inode.i_ctime;
                 struct tm* c_struct = localtime(&c_time);
@@ -187,8 +187,8 @@ void analyzeInodes(){
 
 
                 printf("INODE,%d,%s,%d,%d,%d,%d,%s,%s,%s,%d,%d",
-                count, file_type, inode.i_mode, inode.i_uid, inode.i_gid, inode.i_links_count,
-                cBuff, mBuff, aBuff, inode.i_size,inode.i_blocks
+                    count, file_type, (int) inode.i_mode, (int) inode.i_uid, (int) inode.i_gid, (int) inode.i_links_count,
+                    cBuff, mBuff, aBuff, (int) inode.i_size, (int) inode.i_blocks
                 );
 
                 for(j = 0; j < 15 ; j++){
