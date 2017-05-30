@@ -175,9 +175,9 @@ void analyzeInodes(){
                 struct tm* C_time = localtime(&c_time);
                 struct tm* M_time = localtime(&m_time);
 
-                strftime(&aBuff[0],30,"%m/%d/%g %H:%M:%S",A_time);
-                strftime(&cBuff[0],30,"%m/%d/%g %H:%M:%S",C_time);
-                strftime(&mBuff[0],30,"%m/%d/%g %H:%M:%S",M_time);
+                strftime(aBuff,30,"%m/%d/%g %H:%M:%S",A_time);
+                strftime(cBuff,30,"%m/%d/%g %H:%M:%S",C_time);
+                strftime(mBuff,30,"%m/%d/%g %H:%M:%S",M_time);
 
 
                 printf("INODE,%d,%s,%d,%d,%d,%d,%s,%s,%s,%d,%d\n",
