@@ -130,6 +130,7 @@ void analyzeInodes(){
     struct ext2_inode inode;
     int status;
     char file_type[2];
+    int count = 0;
 
     //arrays to be used in analyzeDirectories
     directories = (int*)malloc(super.s_inodes_count * sizeof(int));
@@ -144,13 +145,14 @@ void analyzeInodes(){
     int i, j;
     for( i = start; i < end ; i += sizeof(struct ext2_inode)){
 
-        if(inode_map[i] == 1){
+        //if(inode_map[i] == 1){
 
             status = pread( fs_fd, &inode,sizeof(struct ext2_inode), i );
             if( status  ==  -1 ){
                  print_error_message(errno,2);
              }
             if( (inode.i_links_count != 0) && (inode.i_mode != 0) ){
+                count ++;
 
                 inodes_offset[num_inodes] = i;
                 inodes[num_inodes] = i + 1;
@@ -186,7 +188,7 @@ void analyzeInodes(){
 
 
                 printf("INODE,%d,%s,%d,%d,%d,%d,%s,%s,%s,%d,%d",
-                i +1, file_type, inode.i_mode, inode.i_uid, inode.i_gid, inode.i_links_count,
+                count, file_type, inode.i_mode, inode.i_uid, inode.i_gid, inode.i_links_count,
                 cBuff, mBuff, aBuff, inode.i_size,inode.i_blocks
                 );
 
@@ -200,7 +202,7 @@ void analyzeInodes(){
                 printf("\n");
 
             }
-        }
+        //}
     }
 //end of analyzeInodes
 }
