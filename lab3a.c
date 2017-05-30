@@ -130,6 +130,9 @@ void analyzeInodes(){
     struct ext2_inode inode;
     int status;
     char file_type[2];
+    char aBuff[30]; //access
+    char cBuff[30]; //create
+    char mBuff[30]; //modify
     int count = 0;
 
     //arrays to be used in analyzeDirectories
@@ -151,17 +154,17 @@ void analyzeInodes(){
             if( status  ==  -1 ){
                  print_error_message(errno,2);
              }
-            if( (inode.i_links_count != 0) && (inode.i_mode != 0) ){
-                count ++;
+             count ++;
 
-                inodes_offset[num_inodes] = i;
-                inodes[num_inodes] = i + 1;
+            if( (inode.i_links_count != 0) && (inode.i_mode != 0) ){
+                inodes_offset[num_inodes] = count;
+                inodes[num_inodes] = count + 1;
                 num_inodes++;
                 if(inode.i_mode & 0x8000){
                     strcpy(file_type,"f");
                 }else if (inode.i_mode & 0x4000){
-                    directories[num_directories] = i;
-                    dir_inodes[num_directories] = i + 1;
+                    directories[num_directories] = count;
+                    dir_inodes[num_directories] = count + 1;
                     num_directories ++;
                     strcpy(file_type,"d");
                 } else if (inode.i_mode & 0xA000){
@@ -170,20 +173,16 @@ void analyzeInodes(){
                     strcpy(file_type,"?");
                 }
 
-                char aBuff[30];
-                char cBuff[30];
-                char mBuff[30];
-
                 time_t a_time = inode.i_atime;
-                time_t c_time = inode.i_ctime;
-                time_t m_time = inode.i_mtime;
-
                 struct tm* a_struct = localtime(&a_time);
-                struct tm* c_struct = localtime(&c_time);
-                struct tm* m_struct = localtime(&m_time);
-
                 strftime(aBuff,30,"%m/%d/%g %H:%M:%S",a_struct);
+
+                time_t c_time = inode.i_ctime;
+                struct tm* c_struct = localtime(&c_time);
                 strftime(cBuff,30,"%m/%d/%g %H:%M:%S",c_struct);
+
+                time_t m_time = inode.i_mtime;
+                struct tm* m_struct = localtime(&m_time);
                 strftime(mBuff,30,"%m/%d/%g %H:%M:%S",m_struct);
 
 
