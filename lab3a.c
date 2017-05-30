@@ -384,20 +384,16 @@ int main(int argc, char* argv[]){
             print_error_message(errno,2);
         }
     }
-fs_fd = open(fs_name, O_RDONLY);
-    if( fs_fd == -1 ){
-                print_error_message(errno,2);
-    }
 
-printf("first\n");
+fs_fd = open(fs_name, O_RDONLY);
+if( fs_fd == -1 ){
+    print_error_message(errno,2);
+}
+
 analyzeSuper();
-printf("after analyzeSuper\n");
 analyzeGroup();
-printf("after group\n");
 analyzeBitmap();
-printf("after bitmap\n");
 analyzeInodes();
-printf("after indodes\n");
 analyzeDirectory();
 analyzeIndirect();
 
