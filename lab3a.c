@@ -13,6 +13,8 @@ TODO: change date format ==> use piazza post
 #include <fcntl.h>
 #include <inttypes.h>
 #include <math.h>
+#include <time.h>
+
 #include "ext2_fs.h"
 
 //global variables
@@ -161,11 +163,26 @@ void analyzeInodes(){
                     strcpy(file_type,"?");
                 }
 
-                printf("INODE,%d,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                i +1, file_type, inode.i_mode, inode.i_uid, inode.i_gid, inode.i_links_count,
-                inode.i_ctime, inode.i_mtime, inode.i_mtime, inode.i_size,
-                inode.i_blocks
-             );
+                time_t stime;
+                struct tm mytime;
+
+                printf("INODE,%d,%s,%d,%d,%d,%d,\n",
+                i +1, file_type, inode.i_mode, inode.i_uid, inode.i_gid, inode.i_links_count
+                );
+
+                stime = inode.i_ctime;
+                gmtime_r(&stime, &mytime);
+                printf("%d/%d/%d %d:%d:%d,",mytime.tm_mon,mytime.tm_mday,1900 + mytime.tm_year,mytime.tm_hour,mytime.tm_min,mytime.tm_sec );
+
+                stime = inode.i_mtime;
+                gmtime_r(&stime, &mytime);
+                printf("%d/%d/%d %d:%d:%d,",mytime.tm_mon,mytime.tm_mday,1900 + mytime.tm_year,mytime.tm_hour,mytime.tm_min,mytime.tm_sec );
+
+                stime = inode.i_atime;
+                gmtime_r(&stime, &mytime);
+                printf("%d/%d/%d %d:%d:%d,",mytime.tm_mon,mytime.tm_mday,1900 + mytime.tm_year,mytime.tm_hour,mytime.tm_min,mytime.tm_sec );
+
+                printf("%d,%d",inode.i_size,inode.i_blocks);
 
                 for(j = 0; j < EXT2_N_BLOCKS ; j++){
                     printf(",%d",inode.i_block[j]);
