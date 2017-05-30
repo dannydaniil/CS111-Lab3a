@@ -156,15 +156,19 @@ void analyzeInodes(){
              count ++;
 
             if( (inode.i_links_count != 0) && (inode.i_mode != 0) ){
+
                 inodes_offset[num_inodes] = i;
                 inodes[num_inodes] = count ;
                 num_inodes++;
+
                 if(inode.i_mode & 0x8000){
                     strcpy(file_type,"f");
                 }else if (inode.i_mode & 0x4000){
+
                     directories[num_directories] = i;
                     dir_inodes[num_directories] = count;
                     num_directories ++;
+
                     strcpy(file_type,"d");
                 } else if (inode.i_mode & 0xA000){
                     strcpy(file_type,"s");
