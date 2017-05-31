@@ -29,7 +29,6 @@ uint32_t block_size;
 int num_directories = 0;
 int num_inodes = 0;
 int* directories,* dir_inodes,* inodes,* inodes_offset;
-int* inode_map;
 
 #define SUPERBLOCK_OFFSET       1024
 #define OFFSET_ADDEND           40
@@ -101,8 +100,6 @@ void analyzeBitmap(){
     //place start at inode bitmap
     start = group.bg_inode_bitmap * block_size;
 
-    inode_map = (int*) malloc(8 * block_size * sizeof(int));
-
     for(i = 0; i < block_size ; i++ ){
         status = pread(fs_fd, &entry, 1, start + i);
         if( status  ==  -1 ){
@@ -113,9 +110,6 @@ void analyzeBitmap(){
          for(j = 0; j < 8 ; j++){
              if ( (entry & mask ) == 0 ){
                  printf("IFREE,%d\n", (8 * i) + j + 1 );
-                 inode_map[(8 * i) + j + 1] = 0;
-             } else {
-                 inode_map[(8 * i) + j + 1] = 1;
              }
              mask = mask << 1;
          }
@@ -146,8 +140,6 @@ void analyzeInodes(){
 
     int i, j;
     for( i = start; i < end ; i += sizeof(struct ext2_inode)){
-
-        //if(inode_map[i] == 1){
 
             status = pread( fs_fd, &inode,sizeof(struct ext2_inode), i );
             if( status  ==  -1 ){
