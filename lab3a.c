@@ -1,8 +1,3 @@
-/*
-TODO: change date format ==> use piazza post
-      test using debugfs
-      pass the sanity check
-*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
