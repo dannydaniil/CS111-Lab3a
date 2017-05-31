@@ -242,7 +242,6 @@ void analyzeDirectory() {
         if (offset == 0) { continue; }
         for (j = 0; j < super_bsize / 4; j++) {
             //depends on how inodes are organized
-            curr_offset = super_bsize * offset + (j * 4);
             uint32_t block;
             if (pread(fs_fd, &block, 4, curr_offset) == -1) { print_error_message(errno, 2); }
             if (block != 0) {
@@ -255,7 +254,6 @@ void analyzeDirectory() {
         if (pread(fs_fd, &offset, 4, directories[i] + OFFSET_ADDEND + (EXT2_DIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
         if (offset == 0) { continue; }
         for (j = 0; j < super_bsize / 4; j ++) {
-            //find how inodes are organized
             curr_offset = super_bsize * offset + (j * 4);
             uint32_t block;
             if (pread(fs_fd, &block, 4, curr_offset) == -1) { print_error_message(errno, 2); }
@@ -321,12 +319,10 @@ void generateIndirectMessage(int inode_num, int indirection_level, int offset, i
 void analyzeIndirect() {
     uint32_t super_bsize = EXT2_MIN_BLOCK_SIZE << super.s_log_block_size;
     int i, j, k, l;
-    //TODO: get inode_count
     for (i = 0; i < num_inodes; i++) {
         uint32_t block;
 
         //single indirect
-        //TODO: populate inodes_offset array
         if (pread(fs_fd, &block, 4, inodes_offset[i] + OFFSET_ADDEND + (EXT2_IND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
         int offset = block * super_bsize;
         int base_offset = offset;
