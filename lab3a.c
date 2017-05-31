@@ -61,14 +61,15 @@ void analyzeSuper(){
 
 void analyzeGroup(){
     int status;
+    int group_num = 0;
     status = pread(fs_fd,&group, sizeof(struct ext2_group_desc), SUPERBLOCK_OFFSET + sizeof(struct ext2_super_block));
     if( status  ==  -1 ){
          print_error_message(errno,2);
      }
 
      //always 1 group
-     printf("GROUP,0,%d,%d,%d,%d,%d,%d,%d\n",
-        super.s_blocks_count,super.s_inodes_per_group,
+     printf("GROUP,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        group_num, super.s_blocks_count,super.s_inodes_per_group,
         group.bg_free_blocks_count, group.bg_free_inodes_count,
         group.bg_block_bitmap, group.bg_inode_bitmap, group.bg_inode_table
     );
@@ -196,7 +197,6 @@ void analyzeInodes(){
                 printf("\n");
 
             }
-        //}
     }
 //end of analyzeInodes
 }
