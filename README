@@ -45,13 +45,11 @@ inode:
 
 The requirement is satisfied within analyzeInode.
 The read starts at group.bg_inode_table * block_size ,
-which is where the inode table is. Using the the info
-we got from the inode bitmap, we examine the used inodes.
+which is where the inode table is. It ends at
+start + (super.s_inodes_count * sizeof(struct ext2_inode)).
 For each inode, we perform a pread and save it in a struct of
 type ext2_inode. The contents are then printed as specfied
 by the spec. The tricky part was the outputting of the times.
-We used gmtime_r to convert from seconds till epoch to
-the specified format, as suggested by a post on piazza.
 
 
 directory entries:
