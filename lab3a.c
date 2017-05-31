@@ -315,10 +315,10 @@ void generateIndirectMessage(int inode_num, int indirection_level, int offset, i
             indirection_offset = EXT2_IND_BLOCK;
             break;
         case 2:
-            indirection_offset = EXT2_DIND_BLOCK;
+            indirection_offset = EXT2_IND_BLOCK + 256;
             break;
         case 3:
-            indirection_offset = EXT2_TIND_BLOCK;
+            indirection_offset = EXT2_IND_BLOCK + 256 + pow(256,2);
             break;
     }
     printf("%s,%d,%d,%d,%d,%d\n", indirect, inodes[inode_num], indirection_level,
