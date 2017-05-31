@@ -37,9 +37,7 @@ void print_error_message(int err_num, int exit_code) {
     exit(exit_code);
 }
 
-
 void analyzeSuper(){
-    //pread(fd, buff, count , offset);
     int status;
     status = pread(fs_fd,&super, sizeof(struct ext2_super_block), SUPERBLOCK_OFFSET);
     if( status  ==  -1 ){
@@ -56,13 +54,12 @@ void analyzeSuper(){
 
 void analyzeGroup(){
     int status;
+    //always 1 group
     int group_num = 0;
     status = pread(fs_fd,&group, sizeof(struct ext2_group_desc), SUPERBLOCK_OFFSET + sizeof(struct ext2_super_block));
     if( status  ==  -1 ){
          print_error_message(errno,2);
      }
-
-     //always 1 group
      printf("GROUP,%d,%d,%d,%d,%d,%d,%d,%d\n",
         group_num, super.s_blocks_count,super.s_inodes_per_group,
         group.bg_free_blocks_count, group.bg_free_inodes_count,
@@ -163,25 +160,24 @@ void analyzeInodes(){
                 } else{
                     strcpy(file_type,"?");
                 }
-
+                //acces
                 time_t a_time = inode.i_atime;
                 struct tm* a_struct = localtime(&a_time);
                 strftime(aBuff, 30,"%m/%d/%g %H:%M:%S", a_struct);
-
+                //create
                 time_t c_time = inode.i_ctime;
                 struct tm* c_struct = localtime(&c_time);
                 strftime(cBuff,30,"%m/%d/%g %H:%M:%S",c_struct);
-
+                //modify
                 time_t m_time = inode.i_mtime;
                 struct tm* m_struct = localtime(&m_time);
                 strftime(mBuff,30,"%m/%d/%g %H:%M:%S",m_struct);
-
 
                 printf("INODE,%d,%s,%o,%d,%d,%d,%s,%s,%s,%d,%d",
                     count, file_type, (int) (inode.i_mode & 511), (int) inode.i_uid, (int) inode.i_gid, (int) inode.i_links_count,
                     cBuff, mBuff, aBuff, (int) inode.i_size, (int) inode.i_blocks
                 );
-
+                // the rest 15 entries
                 for(j = 0; j < 15 ; j++){
                     if(inode.i_block[j]){
                         printf(",%d",inode.i_block[j]);
