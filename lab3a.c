@@ -329,7 +329,8 @@ void analyzeIndirect() {
         if (pread(fs_fd, &block, 4, inodes_offset[i] + OFFSET_ADDEND + (EXT2_DIND_BLOCK * 4)) == -1) { print_error_message(errno, 2); }
         offset = block * super_bsize;
         base_offset = offset;
-        for (j = 0; j < super_bsize / 4; j++) {
+        for (j = 0; j < super_bsize / 4; j++)
+        {
             uint32_t block2;
             if (pread(fs_fd, &block2, 4, offset) == -1) { print_error_message(errno, 2); }
             if (block2 == 0) { continue; }
@@ -337,7 +338,8 @@ void analyzeIndirect() {
             offset += 4;
             int offset2 = block2 * super_bsize;
             int base_offset2 = offset2;
-            for (k = 0; k < super_bsize / 4; k++) {
+            for (k = 0; k < super_bsize / 4; k++)
+            {
                 uint32_t block3;
                 if (pread(fs_fd, &block3, 4, offset2) == -1) { print_error_message(errno, 2); }
                 if (block3 == 0) { continue; }
